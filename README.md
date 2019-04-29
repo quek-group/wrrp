@@ -1,12 +1,19 @@
-# wrrp.x
+## Description
 wrrp.x is a Fortran code that performs six-dimensional (6D) inverse Fourier transforms on inverse dielectric matrices generated using [BerkeleyGW](https://berkeleygw.org/). The reference associated with this work is
-> K. Noori, N. L. Q. Cheng, F. Xuan, S. Y. Quek, *2D Materials* (2019), *under review*
+> K. Noori, N. L. Q. Cheng, F. Xuan, S. Y. Quek, *2D Materials* (2019), *accepted*
+
+## Features
+- Real-space representation of the screening potential, inverse dielectric matrices, polarizability matrices
+- OpenMP parallelization
 
 ## Usage
 
 ### Compilation
-wrrp.x can be compiled with both `ifort` and `gfortran`.
-To compile the complex version of the code, assuming that user compiles the code with ifort:
+wrrp.x can be compiled with both `ifort` and `gfortran`. The following dependecies are required:
+- Intel MKL *or*
+- fftw2 and LAPACK
+
+To compile the complex version of the code using ifort and Intel MKL:
 ```
 ./cplx.sh
 ```
