@@ -830,7 +830,6 @@ program wrrp
         data_ggp = 0.d0
         data_ggp1d = 0.d0
         v_gp = 0.d0
-!Nic
         vinv_gp = 0.d0
 !x: using BerkeleyGW sigma code (one point only, since subgroup sysmmetry operations of Gamma poin
 !   give the smallest irbz) to generate ind(ig,irq) ph(ig,irq ) which maps iqs --> iq
@@ -838,10 +837,6 @@ program wrrp
 
 irq_loop: do irq_ = 1,nrq
 !x  find which index of gmap produce the current q point in qstar loop
-!debug Nic           write(6,*) irq_
-!debug Nic           write(6,*) (rqin(i,irq_),i=1,3)
-!debug Nic           write(6,*) (epsqpt(i,irq_),i=1,3)
-!debug Nic           write(6,*) "======================================================="
            if ( all( abs( rqin(1:3,irq_) - qstar(1:3,iqs)) .lt. TOL_Small )) then
 !                write(6,*) "1st if in"
               if (all( abs( epsqpt(1:3,irq_) - q(1:3,iq)) .lt. TOL_Small)) then
@@ -1146,173 +1141,8 @@ irq2_loop: do irq_ = 2,nrq
   close(89)
 !==============================================================================
 
-!----Write benzene output------
-!  write(6,*) "Writing output files..."
-!  open(unit=97,file="wrrp.cplx.out",form='formatted',status='replace',iostat=ioerr)
-!  open(unit=98,file="wrrp.real.out",form='formatted',status='replace',iostat=ioerr)
-!  open(unit=99,file="wrrp.abs.out",form='formatted',status='replace',iostat=ioerr)
-!  do z = 1,maxnfft(3)
-!    do x = 1,maxnfft(1)
-!      !fix electron at r'=centre of benzene (0,0,0)
-!      !get W(r,r') for xz plane at y=0 (y of benzene)
-!      write(97,*) x, z, data_rrp(x,1,z,1,1,1)
-!      write(98,*) x, z, real(data_rrp(x,1,z,1,1,1))
-!      write(99,*) x, z, abs(data_rrp(x,1,z,7,1,1))
-!    enddo
-!    ! Write blank line needed for gnuplot contour plot
-!    write(97,*)
-!    write(98,*)
-!    write(99,*)
-!  enddo
-!------------------------------
-
-!----Write 1D benzene/graphite output------
-!  write(6,*) "Writing output files..."
-!  open(unit=97,file="wrrp.cplx.out",form='formatted',status='replace',iostat=ioerr)
-!  open(unit=98,file="wrrp.real.out",form='formatted',status='replace',iostat=ioerr)
-!  open(unit=99,file="wrrp.abs.out",form='formatted',status='replace',iostat=ioerr)
-!  do z = 1,maxnfft(3)
-!    !get W(r,r) for line passing through centre of benzene normal to surface
-!    !centre of benzene is at ~ (5.343,0.000,24.877) au correspoding 
-!    !approximately to r-grid index (6,5,20) VERIFY THIS!
-!    write(97,*) z, data_rrp(6,5,z,6,5,z)
-!    write(98,*) z, real(data_rrp(6,5,z,6,5,z))
-!    write(99,*) z, abs(data_rrp(6,5,z,6,5,z))
-!  enddo
-!------------------------------
-
-!----Write planar average of f(r,r) along z-----
-  write(6,*) "Writing output files..."
-  open(unit=97,file="wrrp.cplx.out",form='formatted',status='replace',iostat=ioerr)
-  open(unit=98,file="wrrp.real.out",form='formatted',status='replace',iostat=ioerr)
-  open(unit=99,file="wrrp.abs.out",form='formatted',status='replace',iostat=ioerr)
-  allocate (planavg (maxnfft(3)), STAT=allocerr)
-  do z = 1,maxnfft(3)
-    tmpsum = 0.d0
-    do y = 1,sc_size(2)*maxnfft(2)
-      do x = 1,sc_size(1)*maxnfft(1)
-        tmpsum = tmpsum + data_rrp(x,y,z,x,y,z)
-      enddo
-    enddo
-    planavg(z) = tmpsum / (sc_size(1)*sc_size(2)*maxnfft(1)*maxnfft(2))
-    write(97,*) z, planavg(z)
-    write(98,*) z, real(planavg(z))
-    write(99,*) z, abs(planavg(z))
-  enddo
-  deallocate (planavg)
-!------------------------------
-
-!----Write bulk Al------
-!  write(6,*) "Writing output files..."
-!  open(unit=97,file="wrrp.cplx.out",form='formatted',status='replace',iostat=ioerr)
-!  open(unit=98,file="wrrp.real.out",form='formatted',status='replace',iostat=ioerr)
-!  open(unit=99,file="wrrp.abs.out",form='formatted',status='replace',iostat=ioerr)
-!  do y = 1,maxnfft(2)
-!    do x = 1,maxnfft(1)
-!      !fix electron at interstitial site (0.25,0.25,0.25) crystal coords)
-!      !corresponds to x=y=z=1.886631461 au
-!      !this corresponds to the real space indices (7,7,7) for FFT grid 24x24x24
-!      !get W(r,r') for xy plane with z fixed at index 7
-!      write(97,*) x, y , data_rrp(x,y,7,7,7,7)
-!      write(98,*) x, y , real(data_rrp(x,y,7,7,7,7))
-!      write(99,*) x, y , abs(data_rrp(x,y,7,7,7,7))
-!    enddo
-!    ! write blank lines required for gnuplot contour plot input
-!    write(98,*)
-!    write(99,*)
-!  enddo
-!------------------------------
-
-!----Write bare Coulomb interaction for bulk Al------
-!  ! 1D output along x axis, y=z=0, r' = (0,0,0)
-!  write(6,*) "Writing output files..."
-!  open(unit=97,file="wrrp.cplx.out",form='formatted',status='replace',iostat=ioerr)
-!  open(unit=98,file="wrrp.real.out",form='formatted',status='replace',iostat=ioerr)
-!  open(unit=99,file="wrrp.abs.out",form='formatted',status='replace',iostat=ioerr)
-!  do x = 1,maxnfft(1)
-!    if (x .eq. 1) then
-!      write(97,*) x, "0", data_rrp(x,1,1,1,1,1)
-!      write(98,*) x, "0", real(data_rrp(x,1,1,1,1,1))
-!      write(99,*) x, "0",  abs(data_rrp(x,1,1,1,1,1))
-!    else
-!      write(97,*) x, 2/norm2(rcart(:,x)), data_rrp(x,1,1,1,1,1)
-!      write(98,*) x, 2/norm2(rcart(:,x)), real(data_rrp(x,1,1,1,1,1))
-!      write(99,*) x, 2/norm2(rcart(:,x)), abs(data_rrp(x,1,1,1,1,1))
-!    endif
-!  enddo
-!------------------------------
-
-!----Write bulk Si output------
-!  write(6,*) "Writing output files..."
-!  open(unit=97,file="wrrp.cplx.out",form='formatted',status='replace',iostat=ioerr)
-!  open(unit=98,file="wrrp.real.out",form='formatted',status='replace',iostat=ioerr)
-!  open(unit=99,file="wrrp.abs.out",form='formatted',status='replace',iostat=ioerr)
-!
-!  do z = 1,maxnfft(3)
-!    do x = 1,maxnfft(1)
-!      !fix electron at bonding site (centre of Si-Si bond)
-!      !get W(r,r') for 110 plane, which cuts xy plane diagonally 
-!      
-!      ! for 12x12x12 FFT 
-!      write(97,*) x, z, data_rrp(x,x,z,3,3,3)
-!      write(98,*) x, z, real(data_rrp(x,x,z,3,3,3))
-!      write(99,*) x, z, abs(data_rrp(x,x,z,3,3,3))
-!      
-!      ! for 24x24x24 FFT 
-!      !write(97,*) x, z, data_rrp(x,x,z,4,4,4)
-!      !write(98,*) x, z, real(data_rrp(x,x,z,4,4,4))
-!      !write(99,*) x, z, abs(data_rrp(x,x,z,4,4,4))
-!      
-!      !fix electron at antibondonding site
-!      !get W(r,r') for 110 plane, which cuts xy plane diagonally
-!      ! for 24x24x24 FFT 
-!      !write(97,*) x, z, data_rrp(x,x,z,4,4,10)
-!      !write(98,*) x, z, real(data_rrp(x,x,z,4,4,10))
-!      !write(99,*) x, z, abs(data_rrp(x,x,z,4,4,10))
-!    enddo
-!    ! write blank lines required for gnuplot contour plot input
-!    write(97,*)
-!    write(98,*)
-!    write(99,*)
-!  enddo  
-!------------------------------
-
-!----Write bare Coulomb interaction for bulk Si ------
-!  write(6,*) "Writing output files..."
-!  open(unit=97,file="wrrp.cplx.out",form='formatted',status='replace',iostat=ioerr)
-!  open(unit=98,file="wrrp.real.out",form='formatted',status='replace',iostat=ioerr)
-!  open(unit=99,file="wrrp.abs.out",form='formatted',status='replace',iostat=ioerr)
-  
-!   ! 2D countour in xy plane, z=0
-!  do x = 1,maxnfft(1)
-!    do y = 1,maxnfft(2)
-!      ! Write v for xy plane at z=0
-!      ! Fix r' at box index (6,6,1)
-!      write(97,*) x, y, data_rrp(x,y,1,6,6,1)
-!      write(98,*) x, y, real(data_rrp(x,y,1,6,6,1))
-!      write(99,*) x, y, abs(data_rrp(x,y,1,6,6,1))
-!    enddo
-!    write(97,*) 
-!    write(98,*) 
-!    write(99,*) 
-!  enddo
-
-! ! 1D output along x axis, y=z=0, r' = (0,0,0)
-!  do x = 1,maxnfft(1)
-!    if (x .eq. 1) then
-!      write(97,*) x, "0", data_rrp(x,1,1,1,1,1)
-!      write(98,*) x, "0", real(data_rrp(x,1,1,1,1,1))
-!      write(99,*) x, "0",  abs(data_rrp(x,1,1,1,1,1))
-!    else
-!      write(97,*) x, 2/norm2(rcart(:,x)), data_rrp(x,1,1,1,1,1)
-!      write(98,*) x, 2/norm2(rcart(:,x)), real(data_rrp(x,1,1,1,1,1))
-!      write(99,*) x, 2/norm2(rcart(:,x)), abs(data_rrp(x,1,1,1,1,1))
-!    endif
-!  enddo
-!-----------------------------------------------------
-!close(121)   
-    deallocate(data_rrp)
-    deallocate (sc_rcart)
-write(6,*) "Finished!"
+  deallocate(data_rrp)
+  deallocate (sc_rcart)
+  write(6,*) "Finished!"
 
 end program wrrp

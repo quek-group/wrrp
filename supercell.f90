@@ -1,8 +1,6 @@
 !================================================================================================
-!   File: supercell.f90 (v0.5) by Cheng Lin Quan Nicholas 
+!   File: supercell.f90 by Cheng Lin Quan Nicholas 
 !   Date: 1 March 2018
-!   Integrate into main code
-!   Read in data from a Gaussian Cube file to copy the data into a user-specified supercell
 !================================================================================================
 
 module supercell_m

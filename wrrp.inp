@@ -1,9 +1,9 @@
-5 ! 1-vscr 5-rhoind
-.false. !use_slab
-.false. !use_wavg
-.true.  !use_q0
-.true.  !use_ss
+5 ! Calculation type. 0-W 1-Vscr 2-V 3-inveps 4-chi 5-rhoind
+.false. ! use_slab: Enable Coulomb slab truncation
+.false. ! use_wavg: Use Monte Carlo averaged value of W and V at the q->0 limit
+.true.  ! use_q0: eps0mat/chi0mat file is present and we should read the file
+.true.  ! use_ss: non-uniform neck subsampling is used
 10.171856963    0.000000000     0.000000000
 0.000000000     10.171856963    0.000000000
-0.000000000     0.000000000     10.171856963
-1 1 1 !supercell size
+0.000000000     0.000000000     10.171856963 ! lattice vectors in bohrs
+1 1 1 ! supercell size in multiples of the unit cell lattice vectors
