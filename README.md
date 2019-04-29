@@ -3,7 +3,7 @@ wrrp.x is a Fortran code that performs six-dimensional (6D) inverse Fourier tran
 > K. Noori, N. L. Q. Cheng, F. Xuan, S. Y. Quek, *2D Materials* (2019), *accepted*
 
 ## Features
-- Real-space representation of the screening potential, inverse dielectric matrices, polarizability matrices
+- Real-space representation of the screening potential, inverse dielectric matrices, polarizability matrices in a user-specified supercell
 - OpenMP parallelization
 
 ## Usage
