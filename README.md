@@ -22,7 +22,7 @@ To compile the complex version of the code using ifort and Intel MKL:
 Input files
 - Input file `wrrp.inp`. See `wrrp.inp` in this directory for input parameters.
 - q-point information `wrrp.qibz` and `wrrp.qfbz`. The input is extracted from the BerkeleyGW `kgrid.x` log file. 
-- Inverse dielectric matrices `epsmat` and `eps0mat` generated using BerkeleyGW
+- Inverse dielectric matrices `epsmat` and `eps0mat` generated using BerkeleyGW. Note that these **must** be in binary format (if compiled with HDF5 support, BerkeleyGW can force binary format output by using the `dont_use_hdf5` flag).
 - (If using Monte Carlo averaging to treat q -> 0 limit in W and V) `wrrp.wcoul0` (Refer to 1. in Notes)
 - (If using non-uniform neck subsampling) `subweights.dat` generated using BerkeleyGW
 - (If using symmetry operations) `isortg` and `gmapdata`
