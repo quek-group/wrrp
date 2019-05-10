@@ -9,7 +9,7 @@ Work done for this code was performed in the National University of Singapore (N
 
 If the BerkeleyGW code is used in conjunction with the wrrp.x code, please also cite the appropriate references for the BerkeleyGW code.
 
-Authors: Keian Noori, (c2dkn@nus.edu.sg), Nicholas Lin Quan Cheng (e0227689@u.nus.edu), Xuan Fengyuan (c2dxf@nus.edu.sg)
+Authors: Keian Noori (c2dkn@nus.edu.sg), Nicholas Lin Quan Cheng (e0227689@u.nus.edu), Xuan Fengyuan (c2dxf@nus.edu.sg)
 
 ## Features
 - Real-space representation of the screening potential, inverse dielectric matrices, polarizability matrices in a user-specified supercell
