@@ -11,6 +11,8 @@ If the BerkeleyGW code is used in conjunction with the wrrp.x code, please also 
 
 Authors: Keian Noori (c2dkn@nus.edu.sg), Nicholas Lin Quan Cheng (e0227689@u.nus.edu), Xuan Fengyuan (c2dxf@nus.edu.sg)
 
+Contact: Quek Su Ying (phyqsy@nus.edu.sg)
+
 ## Features
 - Real-space representation of the screening potential, inverse dielectric matrices, polarizability matrices in a user-specified supercell
 - OpenMP parallelization
