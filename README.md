@@ -5,7 +5,7 @@ The BerkeleyGW/1.2.0 code is licensed under licensed under a free, open source, 
 
 Work done for this code was performed in the National University of Singapore (NUS). We ask that users of this code should cite the following reference:
 
-> K. Noori, N. L. Q. Cheng, F. Xuan, S. Y. Quek, *2D Materials* (2019), *accepted*
+> K. Noori, N. L. Q. Cheng, F. Xuan, S. Y. Quek, 2D Materials **6**, 035036 (2019)
 
 If the BerkeleyGW code is used in conjunction with the wrrp.x code, please also cite the appropriate references for the BerkeleyGW code.
 
