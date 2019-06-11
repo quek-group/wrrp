@@ -1,10 +1,13 @@
 !================================================================================================
-!   File: supercell.f90 by Cheng Lin Quan Nicholas 
+!   File: supercell.f90 by Cheng Lin Quan Nicholas
 !   Date: 1 March 2018
+
+! This code was written at the National University of Singapore (NUS)
+! v0.2 N Cheng
 !================================================================================================
 
 module supercell_m
-    
+
     use params_m
     use mergesort_m
     implicit none
@@ -19,17 +22,17 @@ contains
 subroutine get_sc_grid(a,nfft,rcart,sc_size,sc_a,sc2uc_idx,scvec2real,sc_rcart)
 
     integer, intent(in) :: nfft(6), sc_size(3)
-    real(DP), intent(in) :: a(3,3) 
+    real(DP), intent(in) :: a(3,3)
     real(DP), intent(in) :: rcart(:,:)
     real(DP), intent(out) :: sc_a(3,3)
     integer, intent(out) :: sc2uc_idx(:), scvec2real(:,:)
     real(DP), intent(out) :: sc_rcart(:,:) !(3,nfft(1)*nfft(2)*nfft(3)*sc_size)
 
 !   To explain mysterious variable names
-!   HELP ME: maybe we can name the variables better? 
+!   HELP ME: maybe we can name the variables better?
 !   counter variables, error checking
     integer :: ioerr, i, j, k, x, y, z, ii, n, nr, allocerr
-    integer :: shift_mul(3), pts, nmax, sc_nfft(3) 
+    integer :: shift_mul(3), pts, nmax, sc_nfft(3)
     real(DP) :: point(3),space(3)
     logical :: flag
     real(DP), allocatable :: grid(:,:), sc_grid(:,:)
@@ -56,7 +59,7 @@ subroutine get_sc_grid(a,nfft,rcart,sc_size,sc_a,sc2uc_idx,scvec2real,sc_rcart)
             enddo
         enddo
     enddo
-     
+
     !!! Check whether grid multiplied by alat gives correct ans
     ! Compute sc lattice vectors
     do i = 1,3
@@ -85,11 +88,11 @@ subroutine get_sc_grid(a,nfft,rcart,sc_size,sc_a,sc2uc_idx,scvec2real,sc_rcart)
                     call boxcheck(shift_mul,nr,space,grid,point,flag)
                     ! If point is in sc, save the index
                     if (flag .eqv. .true.) then
-                        sc_grid(1,n) = point(1) 
+                        sc_grid(1,n) = point(1)
                         sc_grid(2,n) = point(2)
                         sc_grid(3,n) = point(3)
                         sc2uc_idx(n) = nr
-                        
+
                         ! We need this for the mapping
                         scvec2real(1,n)= mod((n-1)/(sc_nfft(2)*sc_nfft(3))&
                                           ,sc_nfft(1)) + 1
@@ -113,10 +116,10 @@ subroutine get_sc_grid(a,nfft,rcart,sc_size,sc_a,sc2uc_idx,scvec2real,sc_rcart)
 
     print *, "Sorting the data points..."
     ! Sort the data according to ascending x,y,z in direct coordinates
-    call mergesort1(sc_grid,sc2uc_idx,nmax,1,nmax,3)    
-    call mergesort1(sc_grid,sc2uc_idx,nmax,1,nmax,2)    
-    call mergesort1(sc_grid,sc2uc_idx,nmax,1,nmax,1)    
-    
+    call mergesort1(sc_grid,sc2uc_idx,nmax,1,nmax,3)
+    call mergesort1(sc_grid,sc2uc_idx,nmax,1,nmax,2)
+    call mergesort1(sc_grid,sc2uc_idx,nmax,1,nmax,1)
+
     ! For future development...
 !    print *, "Interpolating onto coarse grid..."
     ! Interpolation onto a coarse grid in the sc with x,y,z grid points
@@ -140,35 +143,35 @@ subroutine get_sc_grid(a,nfft,rcart,sc_size,sc_a,sc2uc_idx,scvec2real,sc_rcart)
 !            enddo
 !        enddo
 !    enddo
-!    
+!
 !    ! Write to cube.out file
 !    call write_cube(coarse_ngrid,coarse_data,sf_v,sf_origin,na,as,ap,ac)
 
     ! Compute real space vectors in the supercell
     do i=1,nmax
        sc_rcart(1,i) =sc_grid(1,i)*sc_a(1,1) +sc_grid(2,i)*sc_a(1,2) +&
-                      sc_grid(3,i)*sc_a(1,3)                     
+                      sc_grid(3,i)*sc_a(1,3)
        sc_rcart(2,i) =sc_grid(1,i)*sc_a(2,1) +sc_grid(2,i)*sc_a(2,2) +&
-                      sc_grid(3,i)*sc_a(2,3)                     
+                      sc_grid(3,i)*sc_a(2,3)
        sc_rcart(3,i) =sc_grid(1,i)*sc_a(3,1) +sc_grid(2,i)*sc_a(3,2) +&
                       sc_grid(3,i)*sc_a(3,3)
     enddo
 
     ! Clean up
     deallocate(grid)
-    deallocate(sc_grid) 
+    deallocate(sc_grid)
     write(6,*), "Finished get_sc_grid"
 end subroutine get_sc_grid
 !=============================================================================
 
 !=============================================================================
 subroutine get_sc_fftbox(fftbox,nr_sc,scvec2real,rvec2real,sc2uc_idx,sc_fftbox)
-    
+
     complex(DPC), intent(in) :: fftbox(:,:,:,:,:,:)
     integer, intent (in) :: nr_sc, scvec2real(:,:), rvec2real(:,:), &
                             sc2uc_idx(:)
     complex(DPC), intent(in out) :: sc_fftbox(:,:,:,:,:,:)
-    integer :: r, rp 
+    integer :: r, rp
 
     ! For each data point in sc, map it to the unit cell
 !$omp parallel do default(private) shared(sc_fftbox,fftbox,scvec2real,rvec2real,sc2uc_idx,nr_sc)
@@ -189,12 +192,12 @@ end subroutine get_sc_fftbox
 !   Check whether a point falls into the supercell
 subroutine boxcheck(shift_mul,nr,space,grid,point,flag)
     integer, intent(in) :: shift_mul(3),nr
-    real(DP), intent(in) ::  space(3) 
+    real(DP), intent(in) ::  space(3)
     real(DP), intent(in) :: grid(:,:)
     real(DP), intent(out) :: point(3)
     logical, intent(out) :: flag
     integer :: ii
-  
+
     flag = .true.
 
     do ii=1,3
@@ -217,4 +220,3 @@ end subroutine boxcheck
 !=============================================================================
 
 end module supercell_m
-

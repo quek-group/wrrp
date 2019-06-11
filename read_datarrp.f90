@@ -1,9 +1,12 @@
 !================================================================================================
 !   File: read_datarrp.f89 (v0.1) by Nicholas Lin Quan Cheng
 !   Centre for Advanced 2D Materials, National University of Singapore
-!   Dept of Physics, Faculty of Science, National University of Singapore 
+!   Dept of Physics, Faculty of Science, National University of Singapore
 !   Date: 23 April 2018
 !   Read in output binary file from wrrp.x to perform post-processing of data
+
+! This code was written at the National University of Singapore (NUS)
+! v0.2 N Cheng
 !================================================================================================
 program read_datarrp
 
@@ -19,7 +22,7 @@ program read_datarrp
 
     ! Read data_rrp.bin
     open(unit=11,file="data_rrp.bin",form='unformatted',status='old',iostat=ioerr)
-    
+
     write(6,*) "This is read_datarrp.cplx.x"
     write(6,*) "Reading data_rrp.bin"
     read(11) ! text
@@ -1105,9 +1108,9 @@ program read_datarrp
 !    open(unit=74,file="si.si.out",form='formatted',status='replace',iostat=ioerr)
 !    do x = 1,sc_size(1)*maxnfft(1)
 !        do y = 1,sc_size(2)*maxnfft(2)
-!      write(74,*)  x, y, real(data_rrp(x,y,48,25,25,48)) 
+!      write(74,*)  x, y, real(data_rrp(x,y,48,25,25,48))
 !        enddo
-!        write(74,*) 
+!        write(74,*)
 !    enddo
 !
 !  open(unit=73,file="rhoind.abovesi.plavg.out",form='formatted',status='replace',iostat=ioerr)
@@ -1203,9 +1206,9 @@ program read_datarrp
 !    open(unit=74,file="si.si.out",form='formatted',status='replace',iostat=ioerr)
 !    do x = 1,sc_size(1)*maxnfft(1)
 !        do y = 1,sc_size(2)*maxnfft(2)
-!      write(74,*)  x, y, real(data_rrp(x,y,48,13,13,48)) 
+!      write(74,*)  x, y, real(data_rrp(x,y,48,13,13,48))
 !        enddo
-!        write(74,*) 
+!        write(74,*)
 !    enddo
 !
 !  open(unit=73,file="rhoind.abovesi.plavg.out",form='formatted',status='replace',iostat=ioerr)
@@ -1301,11 +1304,11 @@ program read_datarrp
 !    open(unit=73,file="rhoind.abovesi.plavg.out",form='formatted',status='replace',iostat=ioerr)
 !    do x = 1,sc_size(1)*maxnfft(1)
 !        do y = 1,sc_size(2)*maxnfft(2)
-!      write(72,*)  x, y, real(data_rrp(x,y,46,15,31,46)) 
-!      write(73,*)  x, y, real(data_rrp(x,y,46,15,31,54)) 
+!      write(72,*)  x, y, real(data_rrp(x,y,46,15,31,46))
+!      write(73,*)  x, y, real(data_rrp(x,y,46,15,31,54))
 !        enddo
-!        write(72,*) 
-!        write(73,*) 
+!        write(72,*)
+!        write(73,*)
 !    enddo
 !  allocate (planavg (sc_size(3)*maxnfft(3)), STAT=allocerr)
 !
@@ -1370,7 +1373,7 @@ program read_datarrp
 !  open(unit=80,file="grbn.belowH.xsf",form='formatted',status='replace',iostat=ioerr)
 !
 !  allocate (fullchi(sc_size(1)*maxnfft(1),sc_size(2)*maxnfft(2),sc_size(3)*maxnfft(3)))
-!    
+!
 !  fullchi = 0.d0
 !  do z = 1,sc_size(3)*maxnfft(3)
 !    do y = 1,sc_size(2)*maxnfft(2)
@@ -1473,7 +1476,7 @@ program read_datarrp
 !  do z = 1,sc_size(3)*maxnfft(3)
 !    do y = 1,sc_size(2)*maxnfft(2)
 !      do x = 1,sc_size(1)*maxnfft(1)
-!        fullchi(x,y,z) = real(data_rrp(x,y,z,18,16,65)) ! below N 
+!        fullchi(x,y,z) = real(data_rrp(x,y,z,18,16,65)) ! below N
 !      enddo
 !    enddo
 !  enddo
@@ -1565,4 +1568,3 @@ program read_datarrp
     deallocate(data_rrp)
     write(6,*) "Done"
 end program read_datarrp
-

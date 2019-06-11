@@ -1,17 +1,11 @@
 !=========================================================================
 ! Module fftw
-! Contains the routines necessary to setup and perform FFTW calculations. 
+! Contains the routines necessary to setup and perform FFTW calculations.
 ! Adapted from fftw.f90 of Berkeley GW.
-! 
-!----------------------------
-! version 0.1:  18.04.2016      
-! KN: Initial test
-!----------------------------
-! version 0.2:  03.05.2016
-! KN: Included definition of SCALAR via f_defs.h
-!----------------------------
-! version 0.3:  05.07.2016
-! KN: Calculation of real space grid.
+!
+! This code was written at the National University of Singapore (NUS)
+! v0.1 K Noori
+! v0.2 K Noori, N Cheng
 !=========================================================================
 
 #include "f_defs.h"
@@ -24,7 +18,7 @@ module fftw_m
   include 'fftw_f77.i'
 
   private :: check_fft_size,   &
-             gvec_to_fft_index 
+             gvec_to_fft_index
 
   public  :: setup_fft_sizes,  &
              put_into_fftbox,  &
@@ -53,7 +47,7 @@ module fftw_m
       complex*16 :: in(*)
       integer :: out
 ! The argument is really complex*16 out(*), but we only use in-place transforms,
-! in which case this argument is ignored. For simplicity we just pass it 0.    
+! in which case this argument is ignored. For simplicity we just pass it 0.
     end subroutine fftwnd_f77_one
   end interface
 
@@ -72,7 +66,7 @@ contains
     integer, intent(in) :: nmax(3)
     integer, intent(out) :: nfft(6)
     real(DP), intent(out) :: scale
-    
+
     integer, parameter :: nfac = 3
     integer :: i
 
@@ -83,48 +77,48 @@ contains
         nfft(i) = nfft(i) + 1
       enddo
     enddo
-    ! Ideal FFT dimensions for G' are the same as for G     
+    ! Ideal FFT dimensions for G' are the same as for G
     nfft(4) = nfft(1)
     nfft(5) = nfft(2)
     nfft(6) = nfft(3)
 
-! KN: calculating scale here may be unnecessary due to maxnfft in wrrp.f90    
+! KN: calculating scale here may be unnecessary due to maxnfft in wrrp.f90
     scale = 1.0d0/product(nfft(1:6))
     return
   end subroutine setup_fft_sizes
 
-!------------------------------  
+!------------------------------
   logical function check_fft_size(nfft,nfac)
     integer, intent(in) :: nfft, nfac
- 
+
     integer, parameter :: maxfac = 6
-    integer, parameter :: fac(maxfac) = (/ 2, 3, 5, 7, 11, 13 /) 
+    integer, parameter :: fac(maxfac) = (/ 2, 3, 5, 7, 11, 13 /)
     integer :: remainder, product, ifac, ipow, maxpow, pow(maxfac)
 
 ! KN: Note that nfft and nfac must be .ge. 1 and nfac must be .le. maxfac.
 !      No explicit check is made here...at least not yet.
 
-    remainder = nfft 
+    remainder = nfft
     do ifac = 1, maxfac
-      pow(ifac) = 0 
+      pow(ifac) = 0
     enddo
-    
+
     do ifac = 1, nfac
       maxpow = int(log(dble(remainder)) / log(dble(fac(ifac)))) + 1
       do ipow = 1, maxpow
-        if (mod(remainder, fac(ifac)) .eq. 0) then 
+        if (mod(remainder, fac(ifac)) .eq. 0) then
           remainder = remainder / fac(ifac)
           pow(ifac) = pow(ifac) + 1
         endif
       enddo
     enddo
-    
+
     product = remainder
     do ifac = 1, nfac
       do ipow = 1, pow(ifac)
         product = product * fac(ifac)
-      enddo 
-    enddo 
+      enddo
+    enddo
 
 ! KN: Should add here error handling
 !      if (product .ne. nfft) then DIE: factorization failed
@@ -160,7 +154,7 @@ contains
 ! This routine takes data(1:ndata) and puts it into the 6D FFT box fftbox(:,:,:,:,:,:).
 ! This routine modifies the corresponding Berkekely GW routine in order to
 ! handle a 6D FFT.
-! 
+!
 !   ndata -- number of data items in data(:)
 !   data -- the data set, real or complex, depending on ifdef CPLX
 !   ngused -- number of G vectors used in epsilon calculation (i.e. below eps
@@ -172,7 +166,7 @@ contains
 !   nfft(1:6) -- sizes of FFT box: Nx,Ny,Nz,Npx,Npy,Npz
   subroutine put_into_fftbox(data, ngused, ngtot, glist, fftbox, nfft, isortg)
     SCALAR, intent(in) :: data(:) ! (ngused^2)
-    integer, intent(in) :: ngused 
+    integer, intent(in) :: ngused
     integer, intent(in) :: ngtot
     integer, intent(in) :: glist(:,:) ! (3, ngtot)
     integer, optional, intent(in) :: isortg(:) ! (ngtot)
@@ -230,7 +224,7 @@ contains
     idata = 1 ! from 1 to ngused^2
     do i=1,ngused
       do j=1,ngused
-        call gvec_to_fft_index(glist(:,gindex(i)),glist(:,gindex(j)),iboxg,iboxgp,nfft)     
+        call gvec_to_fft_index(glist(:,gindex(i)),glist(:,gindex(j)),iboxg,iboxgp,nfft)
         data(idata) = fftbox(iboxg(1),iboxg(2),iboxg(3),iboxgp(1),iboxgp(2),iboxgp(3))*scale
         idata = idata + 1
       enddo
@@ -240,7 +234,7 @@ contains
   end subroutine get_from_fftbox
 
 !------------------------------
-! Determines the real space grid (in Cartesian coordinates) from the real space lattice 
+! Determines the real space grid (in Cartesian coordinates) from the real space lattice
 ! vectors and the size of the FFT box, nfft.
 ! Nic modifications to make supercell
 subroutine get_real_grid(alat,a,nfft,rcart,rvec2real,sc_size,sc2uc_idx, &
@@ -301,7 +295,7 @@ subroutine get_real_grid(alat,a,nfft,rcart,rvec2real,sc_size,sc2uc_idx, &
     write(85,905) ((sc_rcart(i,j),i=1,3),j=1,nmax)
 905 format(3f16.9)
 !!!!!LOG
-    
+
 !    ! transform basis from a() to Cartesian
 !    do ir = 1,nr
 !      rcart(1,ir) = r(1,ir)*a(1,1) + r(2,ir)*a(1,2) + r(3,ir)*a(1,3)
@@ -327,7 +321,7 @@ subroutine get_real_grid(alat,a,nfft,rcart,rvec2real,sc_size,sc2uc_idx, &
 !Nic: print out sc_rcart
     write(85,905) ((sc_rcart(i,j),i=1,3),j=1,nmax)
 !!!!!LOG
-    
+
     return
   end subroutine get_real_grid
 
@@ -345,16 +339,16 @@ subroutine get_real_grid(alat,a,nfft,rcart,rvec2real,sc_size,sc2uc_idx, &
 !     given nfft(). If so it shouldn't be recreated. Check via nfftold variable.
 
     call fftwnd_f77_create_plan(plus_plan,6,nfft,FFTW_BACKWARD, &
-         FFTW_MEASURE+FFTW_IN_PLACE+FFTW_USE_WISDOM)    
+         FFTW_MEASURE+FFTW_IN_PLACE+FFTW_USE_WISDOM)
     call fftwnd_f77_create_plan(minus_plan,6,nfft,FFTW_FORWARD, &
          FFTW_MEASURE+FFTW_IN_PLACE+FFTW_USE_WISDOM)
 
-! Do the FFT    
+! Do the FFT
     if (sign == 1) then
       call fftwnd_f77_one(plus_plan,fftbox,0)
     else if (sign == -1) then
       call fftwnd_f77_one(minus_plan,fftbox,0)
-    endif    
+    endif
 
     return
   end subroutine do_fft

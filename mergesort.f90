@@ -2,6 +2,9 @@
 !   File: mergesort.f90
 !   Date: March 2018
 !   Merge sort routines to be used in supercell.f90
+!
+! This code was written at the National University of Singapore (NUS)
+! v0.2 N Cheng
 !=========================================================================
 
 module mergesort_m
@@ -17,7 +20,7 @@ subroutine merge1(lst, lst2, n, a, middle, b,col)
     real*8 :: tmp(3,n)
     integer, intent(in out) :: lst2(n)
     integer :: tmp2(n)
-    
+
     ai = a
     bi = middle
     ti = a

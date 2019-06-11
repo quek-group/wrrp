@@ -1,6 +1,9 @@
 !=========================================================================
 ! Module v
 ! Contains the routines necessary to calculate the bare Coulomb potential
+!
+! This code was written at the National University of Singapore (NUS)
+! v0.1 K Noori
 !=========================================================================
 
 #include "f_defs.h"
@@ -16,7 +19,7 @@ module v_m
 contains
 
 !------------------------------
-! Calculate the asymmetric  Coulomb interaction 
+! Calculate the asymmetric  Coulomb interaction
 ! v(G)=8*pi/|G|^2 (Ry)
 ! In the case of WGG', we need v(q+G').
   subroutine vcoul_g(use_slab,gp,q,b,blat,vcoul0,vcoul)
@@ -37,20 +40,20 @@ contains
     qg = 0.d0
     qg = gcart + qcart
     ! Magnitude of q+G in blat units
-    norm_cart = norm2(qg) 
+    norm_cart = norm2(qg)
 
     ! Set the threshold at which we consider |q+G| = 0, i.e. head element
     ! This sets the threshold below at or below which we use vcoul0
-    !! Default is TOL_QG_ZERO, which corresponds to a maximum q0 of 
+    !! Default is TOL_QG_ZERO, which corresponds to a maximum q0 of
     !! (0.002,0.002,0.002) in blat units
     !!tol_head = TOL_QG_ZERO
     ! KN: We're now directly passing a q = 0 vector when in the q0 loop (aside
     !     from truncated metals).
-    !     As a result we want use vcoul0 when (q+G)=0 (i.e. when |q+G| 
+    !     As a result we want use vcoul0 when (q+G)=0 (i.e. when |q+G|
     !     < TOL_ZERO) in order to avoid a divergence.
     tol_head = TOL_ZERO
 !    tol_head = TOL_QG_ZERO
-    
+
     !!!!!LOG
     ! Nic: I find this logging to be time-consuming...
     !      maybe some verbosity flag to enable this?
@@ -71,11 +74,11 @@ contains
 !    write(85,'(a50,3f10.6)') "The q+G' vector in Cartesian 1/bohr units is:", qg
     !!!!!LOG
 
-    ! Calculate Coulomb interaction 
+    ! Calculate Coulomb interaction
     ! Note that we use 8*pi insteady of 4*pi since we want Ry and not Ha
- 
+
     if (norm_cart .le. tol_head) then
-      ! This is the head element (|q+G| = 0) so use vcoul0 
+      ! This is the head element (|q+G| = 0) so use vcoul0
       write(6,*) "Replacing head element of V with vcoul0..."
       vcoul = vcoul0
     elseif (use_slab) then
@@ -83,14 +86,14 @@ contains
       ! Slab Coulomb truncation is enabled
       ! Use Ismail-Beigi's analytical expression, as implement in Berkeley GW
       ! non-periodic direction MUST be along z (i.e. b(:,3))
-      qgxy(1:2) = qg(1:2) 
+      qgxy(1:2) = qg(1:2)
       qgxy(3) = 0.d0
       kxy = sqrt(dot_product(qgxy,qgxy))
       kz = qg(3)
       zc = (PI_D)/(blat*b(3,3))
       vcoul = (8.0d0*PI_D)/norm_sq
       vcoul = vcoul*(1.0d0-exp(-kxy*zc)*cos(kz*zc))
-    else  
+    else
       ! No Coulomb truncation
       vcoul = (8*PI_D)/norm_sq
     endif
@@ -109,7 +112,7 @@ contains
   end subroutine vcoul_g
 
 !------------------------------
-! Calculate the symmetric  Coulomb interaction 
+! Calculate the symmetric  Coulomb interaction
 ! v(G,G')=8*pi/(|G||G'|) (Ry)
 ! In the case of WGG', we need v(q+G,q+G').
   subroutine vcoul_ggp(g,gp,q,b,blat,vcoul)
@@ -123,7 +126,7 @@ contains
 
     ! Convert q to Cartesian coordinates in blat units
     qcart = q(1)*b(:,1) + q(2)*b(:,2) + q(3)*b(:,3)
-    
+
     ! Convert G to Cartesian coordinates
     gcart = g(1)*b(:,1) + g(2)*b(:,2) + g(3)*b(:,3)
 
@@ -140,14 +143,14 @@ contains
     qg1 = qg1 * blat
     qg2 = qg2 * blat
 
-! Calculate Coulomb interaction. 
+! Calculate Coulomb interaction.
 ! Note that we use 8*pi insteady of 4*pi since we want Ry and not Ha
 
 !KN: note that for now we don't use Coulomb trucation
 !KN: note that for now we set v = 0 if q+G or q+G' are 0
     if (norm2(qg1) .eq. 0 .or. norm2(qg2) .eq. 0) then
       vcoul = 0
-    else 
+    else
       vcoul = (8*PI_D)/(norm2(qg1)*norm2(qg2))
     endif
 

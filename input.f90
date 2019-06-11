@@ -1,7 +1,11 @@
 !=========================================================================
 ! Module input
-! Contains routines relating to the input file for the program. 
+! Contains routines relating to the input file for the program.
 ! Adapted from Berkeley GW inread subroutine.
+
+! This code was written at the National University of Singapore (NUS)
+! v0.1 K Noori
+! v0.2 K Noori, N Cheng
 !=========================================================================
 
 #include "f_defs.h"
@@ -35,8 +39,8 @@ contains
 
     ! KN: Read the input file, hardcoded as 'wrrp.inp'
     !     File is assumed to exist; no error checking done yet.
-    ! Nic:status='old' means that if file doesn't exist 
-    !     the program will just terminate violently 
+    ! Nic:status='old' means that if file doesn't exist
+    !     the program will just terminate violently
     open(unit=77,file='wrrp.inp',form='formatted',status='old')
 
     ! Set default values
@@ -45,14 +49,14 @@ contains
     calctype = 0        ! calculation type
     use_slab = .false.      ! use 2D (slab) Coulomb truncation for V
     ! KN: FIX THIS: use_wavg should be required (i.e. 'wrrp.wcoul0' must be present)
-    ! unless use_ss = .true., in which case it should not be used 
-    use_wavg = .false.      ! use MC averaging for W and V as q-->0 
-    use_q0 = .true.     ! indicates the presence of a BGW eps0mat file 
+    ! unless use_ss = .true., in which case it should not be used
+    use_wavg = .false.      ! use MC averaging for W and V as q-->0
+    use_q0 = .true.     ! indicates the presence of a BGW eps0mat file
     ! KN: FIX THIS: the use of subsampling only makes sense when computing W or Vscr.
-    ! setting use_ss = .true. for calctype other than 0 or 1 should cause 
+    ! setting use_ss = .true. for calctype other than 0 or 1 should cause
     ! the program to die gracefully
     use_ss = .false.    ! use BGW subsampling scheme for q-->0
-    
+
 
     ! Read calculation type
     ! 0: screened coulomb: W (default)
@@ -68,9 +72,9 @@ contains
       calcname = "Vscr(r,r')"
     elseif (calctype .eq. 2) then
       calcname = "V(r)"
-    elseif (calctype .eq. 3) then 
+    elseif (calctype .eq. 3) then
       calcname = "epsinv(r,r')"
-    elseif (calctype .eq. 5) then 
+    elseif (calctype .eq. 5) then
       calcname = "rhoind(r,r')"
     else
       calcname = "chi(r,r')"
@@ -85,7 +89,7 @@ contains
     ! .true. : replace V(q->0,G=0) and W(q->0,G=0) with vcoul0 and wcoul0,
     ! respectively, from Berkeley GW via wrrp.wcoul0 input file
     read(77,*,iostat=ioerr) use_wavg
-    
+
     ! Read use_q0 boolean
     ! .true. (default): read q-> 0 eps0mat/chi0mat file
     ! .false.: do not read eps0mat/chi0mat file
@@ -109,9 +113,9 @@ contains
     ! Reciprocal lattice vector magnitude
     blat = (2.0d0 * PI_D) / alat
     ! Normalize lattice vectors to units of alat
-    a(:,:) = a(:,:) / alat 
+    a(:,:) = a(:,:) / alat
     ! Cell volume in alat^3
-    vol =  a(1,1) * (a(2,2) * a(3,3) - a(2,3) * a(3,2)) - & 
+    vol =  a(1,1) * (a(2,2) * a(3,3) - a(2,3) * a(3,2)) - &
     a(2,1) * (a(1,2) * a(3,3) - a(1,3) * a(3,2)) + &
     a(3,1) * (a(1,2) * a(2,3) - a(1,3) * a(2,2))
 
@@ -125,7 +129,7 @@ contains
     b(1,3) = (a(2,1) * a(3,2) - a(3,1) * a(2,2)) / vol
     b(2,3) = (a(3,1) * a(1,2) - a(1,1) * a(3,2)) / vol
     b(3,3) = (a(1,1) * a(2,2) - a(2,1) * a(1,2)) / vol
-  
+
   close(77)
 
   end subroutine read_input
@@ -139,13 +143,13 @@ contains
     character :: dummy
     real(DP), allocatable :: wq(:) ! weights of the q-pts in the irreducible BZ; not currently needed
     integer, intent(out) :: nqfbz ! number of q in full BZ
-    integer, allocatable, intent(out) :: qmapi(:) ! mapping of index of q-pt in iBZ to its index in fBZ 
+    integer, allocatable, intent(out) :: qmapi(:) ! mapping of index of q-pt in iBZ to its index in fBZ
     integer, allocatable, intent(out) :: qmapf(:) ! mapping of a folded fBZ q-pt to corresponding unfolded one
     real(DP), allocatable, intent(out) :: qfbz(:,:) ! q-pts in full BZ, weights in the irreducible BZ
 
     open(unit=36,file='wrrp.qfbz',form='formatted',status='old',action='read',iostat=ioerr)
     open(unit=37,file='wrrp.qibz',form='formatted',status='old',action='read',iostat=ioerr)
-    
+
     read(36,*) nqfbz ! Read total number of q points in full BZ
     allocate(qfbz (3,nqfbz), stat=allocerr)
     allocate(qmapf (nqfbz), stat=allocerr)
@@ -153,7 +157,7 @@ contains
       read(36,*,iostat=ioerr) tmp, qfbz(:,i), tmp, qmapf(i), dummy
     enddo
 
-    read(37,*) nqibz ! Number of q points in irreducible BZ including q0, if present 
+    read(37,*) nqibz ! Number of q points in irreducible BZ including q0, if present
     allocate(wq (nqibz), stat=allocerr)
     allocate(qmapi (nqibz), stat=allocerr)
     do i = 1,nqibz
@@ -165,16 +169,16 @@ contains
   end subroutine read_q_points
 
 !------------------------------
-! Read the input file 'subweights.dat' produced by the BGW subsample.x program 
+! Read the input file 'subweights.dat' produced by the BGW subsample.x program
 ! in order to get the weights of the subsampled q-pts (qs) in the q=0 Voronoi cell.
 ! In 'subsample.dat' the first line lists the total number of qs. Each
 ! subsequent line gives the weight and magnitude of the corresponding qs
   subroutine read_qs_weights(nqs,wqs)
-    integer, intent(out) :: nqs     ! number of subsampled (qs) q points 
+    integer, intent(out) :: nqs     ! number of subsampled (qs) q points
     integer :: iqs, allocerr, ioerr
     real(DP) :: val
     real(DP), allocatable, intent(out) :: wqs(:)     ! weights of the qs points
-  
+
     open(unit=81,file='subweights.dat',form='formatted',status='old',iostat=ioerr)
     read(81,*,iostat=ioerr) nqs ! Read total number of qs points
     allocate(wqs (nqs),stat=allocerr)
@@ -184,21 +188,21 @@ contains
       !iq = iq + 1
       !wq(iq) = val
     enddo
-    close(81)  
+    close(81)
   end subroutine read_qs_weights
 
 !------------------------------
 ! Read the input file 'wrrp.wcoul0' produced by our modified BGW program.
 ! This file is needed when use_wavg is true and contains the screening type and
 ! head elements of bare and screened Coulomb (V & W) matrices determined in BGW
-! by Monte Carlo averaging. 
+! by Monte Carlo averaging.
   subroutine read_wcoul0(iscreen,vcoul0,wcoul0)
     character :: dummy
     integer :: ioerr
     real(DP) :: wcoul0r, wcoul0i
     integer, intent(out) :: iscreen     ! BGW screening type
     real(DP), intent(out) :: vcoul0
-    SCALAR, intent(out) :: wcoul0 
+    SCALAR, intent(out) :: wcoul0
 
     ! From BGW: iscreen:
     ! 0 = semiconductor
@@ -207,8 +211,8 @@ contains
 
     open(65,file='wrrp.wcoul0',form='formatted',status='old',iostat=ioerr)
 !      open(unit=121,file="slab.log",form='formatted',status='replace')
-    read(65,*) dummy, iscreen ! BGW screening type 
-    read(65,*) !q0 vector 
+    read(65,*) dummy, iscreen ! BGW screening type
+    read(65,*) !q0 vector
     read(65,*) !G0
     read(65,*) dummy, vcoul0
 #ifdef CPLX
@@ -266,12 +270,12 @@ contains
     if (calctype .eq. 4) then
       nq = nq-nq0
     endif
-      
+
   end subroutine binaryfile_init
 ! DEPRECATED -> REMOVE ME!
 
 !------------------------------
-! Read BerkeleyGW binary epsmat or chimat file and extract 
+! Read BerkeleyGW binary epsmat or chimat file and extract
 ! q points, G vectors, and setup FFT mesh
   subroutine binaryfile_setup (nq,nqs,ng,kx,ky,kz,q,qs,q0,use_q0,use_ss,nfft,maxnfft,calctype)
     logical, intent(in) :: use_q0, use_ss
@@ -289,7 +293,7 @@ contains
     ! Read q points and G vectors from appropriate binary file
     if (calctype .ne. 4) then
       ! We are not looking at chi: read epsmat file
-      
+
       if (use_q0) then
       ! Read q0 from eps0mat if use_q0 = .true.
         open(unit=12,file='eps0mat',form='unformatted',status='old',iostat=ioerr)
@@ -373,7 +377,7 @@ contains
         read(10)
         read(10)
         read(10)
-        read(10) 
+        read(10)
         read(10) (q0(i),i=1,3)
         close(10)
       else
@@ -395,7 +399,7 @@ contains
       backspace(09)
       allocate (kx (ng), stat=allocerr)
       allocate (ky (ng), stat=allocerr)
-      allocate (kz (ng), stat=allocerr)    
+      allocate (kz (ng), stat=allocerr)
       read(09) ng, gridpts, grid, (kx(ig),ky(ig),kz(ig),ig=1,ng)
       read(09) nq
       backspace(09)
@@ -409,10 +413,10 @@ contains
       allocate (q (3,nq), stat=allocerr)
       do iq = 1,nq
         q(:,iq) = q_dummy(:,iq+nq0)
-      enddo 
+      enddo
     endif
    ! Setup FFT dimensions
-   ! The size of the epsilon inverse /chi matrix in the binary file (nmtx) 
+   ! The size of the epsilon inverse /chi matrix in the binary file (nmtx)
    ! varies by q-point.
    ! We initialize the maximum dimension, maxdim, to 0 and then loop over the
    ! q-points in the binary file to find the maximum ntmx value, which is then
@@ -431,42 +435,42 @@ contains
         read(11) ! read the current q point
         do i = 1,nmtx
           read(11) ! read epsinv
-        enddo 
+        enddo
       else
         ! We are looking at chi: read chimat
-        read(09) 
-        read(09) nmtx 
+        read(09)
+        read(09) nmtx
         do i = 1,nmtx
-          read(09) ! read chi 
+          read(09) ! read chi
         enddo
       endif
 
       ! Update maxdim
       if (nmtx .gt. maxdim) maxdim = nmtx
-    
+
       ! Since nmtx is q-dependent so are nfft(:).
       ! The size of data_rrp is determined by the maximum values of nfft so here we
       ! set up the FFT grid in order to determinine the max nfft
       ! values and correctly allocate the size of data_rrp
-      
+
       ! max (absolute) dimensions of G vectors in x, y and z directions
-      kmax(1) = 0 
+      kmax(1) = 0
       kmax(2) = 0
       kmax(3) = 0
-  
+
       !!!!!!LOG
       !write(85,*) "Data for q",iq,"of",nq
       !write(85,*) "nmtx value is",nmtx
       !write(85,*) "isortq is",(isortq(i),i=1,ng)
       !!!!!!
-  
+
       do i = 1,nmtx
         if (calctype .ne. 4) then
           ! isortg defined for epsmat file
           ig = isortg(i) ! return corresponding index from list of unsorted Gvecs
         else
           ! isortg not defined for chimat file
-          ig = i 
+          ig = i
         endif
         if (abs(kx(ig)).gt.kmax(1)) then
           kmax(1) = abs(kx(ig))
@@ -484,12 +488,12 @@ contains
       nmax(2) = 2*kmax(2) + 1
       nmax(3) = 2*kmax(3) + 1
       call setup_fft_sizes(nmax,nfft,scale)
-  
+
       ! Set max nfft sizes
       do i = 1,size(nfft)
         if (nfft(i) .gt. maxnfft(i)) maxnfft(i) = nfft(i)
-      enddo 
-  enddo 
+      enddo
+  enddo
 
   ! Close appropriate binary file
   if (calctype .ne. 4) then
@@ -499,12 +503,12 @@ contains
   endif
   deallocate (isortg)
   deallocate (isortgi)
- 
+
   end subroutine binaryfile_setup
 
 !------------------------------
 ! DEPRECATED -> REMOVE ME!
-! Read inverse dielectric / chi matrix from 
+! Read inverse dielectric / chi matrix from
 ! appropriate BerkeleyGW binary file
   subroutine binaryfile_readmatrix(is_q0,initial_read,calctype)
     integer, intent(in) :: calctype
@@ -513,14 +517,14 @@ contains
 
     if (calctype .ne. 4) then
     ! Read eps(0)mat if we are not using chi
-      if (is_q0) then 
+      if (is_q0) then
       ! We are looking at q0 so read from eps0mat
-      
+
       else
       ! We are looking at a non-q0 point so read from epsmat
 
       endif
-      
+
     else
     ! Otherwise read chimat
     endif
