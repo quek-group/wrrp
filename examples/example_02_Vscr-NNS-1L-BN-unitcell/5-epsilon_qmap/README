@@ -1,0 +1,4 @@
+Here we do not need a fully converged calculation; we only want to produce the 'isortg' file. We therefore do not need many unoccupied bands.
+Note that, unlike the regular EPSILON calculation, we need all of the q-points in the full BZ, with the exception of the Gamma point.
+The q-points of the full BZ are listed in the WFN.log file, under 'k-points in the original uniform grid', in the ../00-kgrid directory. 
+Be sure to remove the Gamma point from the list.

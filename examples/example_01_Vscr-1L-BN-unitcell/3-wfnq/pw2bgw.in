@@ -1,0 +1,13 @@
+&input_pw2bgw
+   prefix = 'bn'
+   real_or_complex = 2
+   wfng_flag = .true.
+   wfng_file = 'wfn.cplx'
+   wfng_kgrid = .true.
+   wfng_nk1 = 18
+   wfng_nk2 = 18
+   wfng_nk3 = 1
+   wfng_dk1 = 0.018
+   wfng_dk2 = 0.0
+   wfng_dk3 = 0.0
+/

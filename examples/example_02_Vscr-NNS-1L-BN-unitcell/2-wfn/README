@@ -1,0 +1,5 @@
+K_POINTS obtained from WFN.out in ../00-kgrid directory
+In order to use the NNS scheme (step 3), you *must* run BerkeleyGW's subsample_plan.x program as follows:
+	subsample_plan.x BIN wfn.cplx
+Change the WFN format (BIN) and WFN filename (wfn.cplx) as needed. 
+Please refer to BerkeleyGW's documentation for more information on running the subsample_plan.x code.
