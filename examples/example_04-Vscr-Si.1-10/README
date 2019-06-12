@@ -1,0 +1,23 @@
+Example 04
+2D controur plot of the screening potential, Vscr(r,r'), for bulk Si (1-10)
+The output should match Fig. 5a in Hybertsen and Louie, PRB 34 (1986), 5390.
+
+# How to run this example
+1.	Run linkscript.sh in order to create the required dynamic links (don't worry that the linked files don't exist yet!)
+	N.B. Depending on your version of Quantum ESPRESSO, the charge-density and data-file files might have  names or extensions different from those in linkfiles.sh
+	They will, however, always be located in the $PREFIX.save directory of the SCF calculation (./1-scf). 
+	Be sure to link the correct files!
+2a.	Run SCF calculations ('in' files) in steps 1-3 with pw.x (Quantum ESPRESSO)
+2b.	Convert Quantum ESPRESSO output to BerkeleyGW format ('pw2bgw.in' files) in steps 1-3 with pw2bgw.x (Quantum ESPRESSO)
+3.	Run step 4 with epsilon.cplx.x (BerkeleyGW)
+4.	Run step 5 with epsilon.cplx.x (*modified* BerkeleyGW qmap)
+5.	Run step 6 with sigma.cplx.x (*modified* BerkeleyGW qmap)
+5.	Run wrrp.cplx.x (be sure to modifiy wrrp.f90 to ensure the correct output type - see README in step 7 directory)
+
+# Notes
+- see the README files in the directories for additional comments
+- please refer to the BerkeleyGW documentation for more information on running the epsilon and sigma programs.
+- the outputs in step 00 were obtained using the BerkeleyGW kgrid.x utility
+- the outputs in step 0 were obtained using the BerkeleyGW gsphere.py utility
+- here we do not use the BerkeleyGW NNS scheme for the q-->0 point. We recommend that you use the NNS scheme (see Example 02) where possible.
+- using 40 cores, the calculations should take roughly 1 hour to complete in total

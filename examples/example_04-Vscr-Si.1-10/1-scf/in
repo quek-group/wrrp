@@ -1,0 +1,39 @@
+&control
+   prefix = 'si'
+   calculation = 'scf'
+   restart_mode = 'from_scratch'
+   wf_collect = .true.
+   outdir = './'
+   wfcdir = './'
+   pseudo_dir = './'
+/
+&system
+   ibrav = 0
+   celldm(1) = 10.2612
+   nat = 8
+   ntyp = 1
+   ecutwfc = 60.0
+/
+&electrons
+   electron_maxstep = 100
+   conv_thr = 1.0d-8
+   mixing_mode = 'plain'
+   mixing_beta = 0.7
+/
+CELL_PARAMETERS (alat= 10.26120000)
+   0.991293120   0.000000000   0.000000000
+   0.000000000   0.991293120   0.000000000
+   0.000000000   0.000000000   0.991293120
+ATOMIC_SPECIES
+  Si  28.086  Si.UPF
+ATOMIC_POSITIONS (crystal)
+Si       0.000000000   0.000000000   0.000000000
+Si       0.250000001   0.250000001   0.250000001
+Si       0.000000000   0.500000000   0.500000000
+Si       0.250000001   0.749999999   0.749999999
+Si       0.500000000   0.000000000   0.500000000
+Si       0.749999999   0.250000001   0.749999999
+Si       0.500000000   0.500000000   0.000000000
+Si       0.749999999   0.749999999   0.250000001
+K_POINTS automatic
+7 7 7 0 0 0

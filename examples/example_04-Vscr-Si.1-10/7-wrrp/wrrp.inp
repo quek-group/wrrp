@@ -1,0 +1,10 @@
+1	! calc type
+.false.	! use_slab 
+.true.	! use_wavg
+.true.	! use_q0
+.false.	! use_ss
+! Lattice vectors (in bohr)
+10.171856963    0.000000000     0.000000000
+0.000000000     10.171856963    0.000000000
+0.000000000     0.000000000     10.171856963
+1 1 1	! supercell size
