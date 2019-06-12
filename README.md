@@ -49,4 +49,4 @@ Output files
 ### Known Issues
 1. If dealing with a 2D metallic system, it is possible that the head element of W (written to `wrrp.wcoul0`) results in a planar-averaged Vscr that does not tend toward 0 away from the slab. This issue is avoided if the NNS scheme is used. We recommend the use of NNS wherever possible.
 
-2. In systems without symmetry (i.e. where the full BZ is used to calculate the wavefunctions), the `gmapdata` file might be incorrect, causing wrrp to crash.
+2. In systems without symmetry (i.e. where the full BZ is used to calculate the wavefunctions), the `gmapdata` file might be incorrect, causing wrrp.x to crash.
