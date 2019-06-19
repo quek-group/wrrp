@@ -46,10 +46,11 @@ In order to properly use the symmetry of the crystal (i.e. in order to use Berke
 
 #### Output files
 - `data_rrp.bin` contains the final (6D) result in real space for further post-processing.
+- (If selected in `wrrp.f90`) `wrrp.real|cplx|abs.out` provides the planar-averaged or 2D contour plot of the real, complex or absolute value of the output data.
 
 #### Parallelization using OpenMP
 - the code supports OpenMP parallelization via the `OMP_NUM_THREADS` variable
-- we recommend that users select a single MPI process and set `OMP_NUM_THREADS` according to their needs
+- on multicore machines, we recommend that users select a single MPI process and set `OMP_NUM_THREADS` according to their needs
 
 ### Notes
 1. **Generation of `wrrp.wcoul0`** requires the user to explicitly write out the Monte Carlo averaged value of the q -> 0 limit in W and V during the computation of the self-energies at the Sigma step in BerkeleyGW. Refer to Computer Physics Communications 183 (2012) 1269–1289 for further discussion. The provided `BerkeleyGW-1.2.0_qmap.patch` enables Sigma to explicitly output `wrrp.wcoul0`. The patch works with BerkeleyGW/1.2.0.
