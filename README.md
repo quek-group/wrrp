@@ -1,4 +1,4 @@
-#wrrp.x
+# wrrp.x
 
 ## Description
 wrrp.x is a Fortran code that performs six-dimensional (6D) inverse Fourier transforms on inverse dielectric matrices generated using [BerkeleyGW](https://berkeleygw.org/).
