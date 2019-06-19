@@ -5,7 +5,7 @@ The BerkeleyGW/1.2.0 code is licensed under licensed under a free, open source, 
 
 Work done for this code was performed in the National University of Singapore (NUS). We ask that users of this code should cite the following reference:
 
-> K. Noori, N. L. Q. Cheng, F. Xuan, S. Y. Quek, 2D Materials **6**, 035036 (2019)
+> [K. Noori, N. L. Q. Cheng, F. Xuan, S. Y. Quek, 2D Materials **6**, 035036 (2019)](https://doi.org/10.1088/2053-1583/ab1e06)
 
 If the BerkeleyGW code is used in conjunction with the wrrp.x code, please also cite the appropriate references for the BerkeleyGW code.
 
@@ -20,7 +20,7 @@ Contact: Quek Su Ying (phyqsy@nus.edu.sg)
 ## Usage
 
 ### Compilation
-wrrp.x can be compiled with both `ifort` and `gfortran`. The following dependecies are required:
+wrrp.x can be compiled with both `ifort` and `gfortran`. The following dependencies are required:
 - Intel MKL *or*
 - fftw2 and LAPACK
 
@@ -28,21 +28,31 @@ To compile the complex version of the code using ifort and Intel MKL:
 ```
 ./cplx.sh
 ```
+Note that you may need to modify this script to suit your machine's environment.
+
+### Patching BerkeleyGW v1.2.0
+In order to properly use the symmetry of the crystal (i.e. in order to use BerkeleyGW epsmat files generated in a reduced Brillouin zone), wrrp.x requires the user to extract symmetry information from the BerkeleyGW code. This ca be accomplished by using a modified version of BerkeleyGW v1.2.0, which writes two files, `isortg` and `gmapdata`. These files are written by the modified epsilon.x and sigma.x routines, respectively. We provide a patch file, `BerkeleyGW-1.2.0_qmap.patch` that applies the changes to BerkeleyGW v1.2.0 needed to write `isortg` and `gmapdata`. The patch can be applied using the standard Unix 'patch' command.
 
 ### Running the code
-Input files
+#### Input files
 - Input file `wrrp.inp`. See `wrrp.inp` in this directory for input parameters.
 - q-point information `wrrp.qibz` and `wrrp.qfbz`. The input is extracted from the BerkeleyGW `kgrid.x` log file.
-- Inverse dielectric matrices `epsmat` and `eps0mat` generated using BerkeleyGW. Note that these **must** be in binary format (if compiled with HDF5 support, BerkeleyGW can force binary format output by using the `dont_use_hdf5` flag).
+- Inverse dielectric matrices `epsmat` and `eps0mat` generated using BerkeleyGW.
+-- Note that these **must** be in binary format (if compiled with HDF5 support, BerkeleyGW can force binary format output by using the `dont_use_hdf5` flag).
+-- Note that we strongly recommend the use of BerkeleyGW v2.0 for the generation of `epsmat` files. The modified BerkeleyGW v1.2.0 should only be used to write `isortg`, `gmapdata`, and, if needed, `wrrp.wcoul0`.
 - (If using Monte Carlo averaging to treat q -> 0 limit in W and V) `wrrp.wcoul0` (Refer to 1. in Notes)
 - (If using nonuniform neck subsampling (NNS)) `subweights.dat` generated using BerkeleyGW
 - (If using symmetry operations) `isortg` and `gmapdata`
 
-Output files
-- `data_rrp.bin` contains the final result in real space for further post-processing.
+#### Output files
+- `data_rrp.bin` contains the final (6D) result in real space for further post-processing.
+
+#### Parallelization using OpenMP
+- the code supports OpenMP parallelization via the `OMP_NUM_THREADS` variable
+- we recommend that users select a single MPI process and set `OMP_NUM_THREADS` according to their needs
 
 ### Notes
-1. **Generation of `wrrp.wcoul0`** requires the user to explicitly write out the Monte Carlo averaged value of the q -> 0 limit in W and V during the computation of the self-energies at the Sigma step in BerkeleyGW. Refer to Computer Physics Communications 183 (2012) 1269–1289 for further discussion. We provide a patch in `wcoul0.patch` which enables Sigma to explicitly output `wrrp.wcoul0`. The patch works with BerkeleyGW/1.2.0.
+1. **Generation of `wrrp.wcoul0`** requires the user to explicitly write out the Monte Carlo averaged value of the q -> 0 limit in W and V during the computation of the self-energies at the Sigma step in BerkeleyGW. Refer to Computer Physics Communications 183 (2012) 1269–1289 for further discussion. The provided `BerkeleyGW-1.2.0_qmap.patch` enables Sigma to explicitly output `wrrp.wcoul0`. The patch works with BerkeleyGW/1.2.0.
 
 2. **Symmetry operations.** The computation of the inverse dielectric matrices exploits symmetry operations to enable calculations within the irreducible Brillouin zone. In order to correctly include the symmetry operations in calculations using wrrp.x, the user is required to compute `isortg` and `gmapdata` at the Epsilon and Sigma step in BerkeleyGW, respectively. We provide a patch in `irrbz.patch` which enables the user to generate `isortg` and `gmapdata` without computing the inverse dielectric matrix and the self-energies respectively. The patch works with BerkeleyGW/1.2.0. Note that if the files `isortg` and `gmapdata` are not provided, the inverse dielectric matrix must be computed in the full Brillouin zone to give correct results.
 
