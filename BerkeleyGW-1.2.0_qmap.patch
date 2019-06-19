@@ -1,0 +1,1298 @@
+--- Common/irrbz.f90.orig	2016-09-01 06:00:12.000000000 +0800
++++ Common/irrbz.f90	2018-08-29 17:11:14.698465000 +0800
+@@ -161,7 +161,8 @@
+                 itnrq(nrq) = it
+                 kg0(1:3,nrq) = kg(1:3)
+ ! there may be more than one matching sym op, but better be only one q-vector!
+-!              exit iq_loop
++! KN: uncommenting the following line
++              exit iq_loop
+               endif
+             enddo
+           enddo iq_loop
+--- Common/read_matrix.f90.orig	2016-09-01 06:00:11.000000000 +0800
++++ Common/read_matrix.f90	2018-07-09 11:40:10.448637000 +0800
+@@ -104,6 +104,16 @@
+   endif
+ #endif
+ 
++!KN
++write(6,*) "**************************"
++write(6,*) "**************************"
++write(6,*) "nmtx is",nmtx
++write(6,*) "npr is", scal%npr
++write(6,*) "npc is", scal%npc
++write(6,*) "**************************"
++write(6,*) "**************************"
++!KN
++
+   if (peinf%verb_debug .and. peinf%inode==0) then
+     if (use_hdf5) then
+       write(6,*) 'Reading matrix: ', nmtx, fname
+--- Common/vcoul_generator.f90.orig	2016-09-01 06:00:10.000000000 +0800
++++ Common/vcoul_generator.f90	2018-08-08 14:36:57.851434000 +0800
+@@ -383,7 +383,6 @@
+ 
+         if ( ekinx .lt. avgcut .and. peinf%jobtypeeval .eq. 1 ) then
+           if (iscreen .eq. 0) then ! semiconductor
+-
+             if(ekinx .gt. TOL_Zero .or. .not.minibz_done) then 
+               if (ekinx .le. TOL_Zero) then
+                 call minibzaverage_3d_oneoverq2(nn,bdot,dvalue,qran,qk,averagew,epshead,wcoul0,q0sph2,celvol,nfq)
+@@ -395,6 +394,21 @@
+                 call minibzaverage_3d_oneoverq2(nn,bdot,dvalue,qran,qk,averagew,epshead,wcoul0,q0sph2,celvol,nfq)
+                 vcoul(ig)=dvalue
+               endif
++
++              !-----------------------------------------------------------------
++              ! KN Modifications 16.06.17
++              ! Print vcoul0 and wcoul0 to file wrrp.wcoul0
++              if (peinf%inode .eq. 0) then
++                write(111,'(a,i3)') "screening",iscreen
++                write(111,'(a15,3f12.8)') "q0", qvec_mod(:)
++                write(111,'(a15,3i7)') "G0", gvec%components(:,isrtq(ig))
++                write(111,'(a15,e20.8)') "vcoul0", vcoul0
++                write(111,'(a15,2e20.8)') "wcoul0", wcoul0
++               !write(111,'(3f12.8,1x,3i7,1x,e20.8,1x,2e20.8)') &
++               !     qvec_mod(:),gvec%components(:,isrtq(ig)),vcoul0, wcoul0
++              endif
++              !-----------------------------------------------------------------
++
+             else
+               vcoul(ig)=vcoul0
+             endif
+@@ -419,6 +433,21 @@
+ ! JRD: This seems wrong. We now use correct vcoul average.
+ !              vcoul(ig)=dvalue/sqrt(ekinx)
+               endif
++
++              !-----------------------------------------------------------------
++              ! KN Modifications 16.06.17
++              ! Print vcoul0 and wcoul0 to file wrrp.wcoul0
++              if (peinf%inode .eq. 0) then
++                write(111,'(a,i3)') "screening",iscreen
++                write(111,'(a15,3f12.8)') "q0", qvec_mod(:)
++                write(111,'(a15,3i7)') "G0", gvec%components(:,isrtq(ig))
++                write(111,'(a15,e20.8)') "vcoul0", vcoul0
++                write(111,'(a15,2e20.8)') "wcoul0", wcoul0
++                !write(111,'(3f12.8,1x,3i7,1x,e20.8,1x,2e20.8)') &
++                !     qvec_mod(:),gvec%components(:,isrtq(ig)),vcoul0, wcoul0
++              endif
++              !-----------------------------------------------------------------
++
+             else
+               vcoul(ig)=vcoul0
+             endif
+@@ -450,12 +479,38 @@
+                 minibz_done = .true.
+                 vcoul(ig)=vcoul0
+               endif
++
++              !-----------------------------------------------------------------
++              ! KN Modifications 16.06.17
++              ! Print vcoul0 and wcoul0 to file wrrp.wcoul0
++              if (peinf%inode .eq. 0) then
++                write(111,'(a,i3)') "screening",iscreen
++                write(111,'(a15,3f12.8)') "q0", qvec_mod(:)
++                write(111,'(a15,3i7)') "G0", gvec%components(:,isrtq(ig))
++                write(111,'(a15,e20.8)') "vcoul0", vcoul0
++                write(111,'(a15,2e20.8)') "wcoul0", wcoul0
++                !write(111,'(3f12.8,1x,3i7,1x,e20.8,1x,2e20.8)') &
++                !     qvec_mod(:),gvec%components(:,isrtq(ig)),vcoul0, wcoul0
++              endif
++              !-----------------------------------------------------------------
++
+             else
+               vcoul(ig)=vcoul0
+             endif
+ 
+           endif
+ 
++         !-----------------------------------------------------------------
++         ! KN Modifications 16.06.17
++         ! Print vcoul0 and wcoul0 to file wrrp.wcoul0
++         !if (peinf%inode.eq.0) then
++         !  !write(111,'(f20.8,1x,f20.8,1x,3f12.8,1x,3i7,1x,e20.8,1x,2e20.8)') &
++         !  !     ekinx,avgcut,qvec_mod(:),gvec%components(:,isrtq(ig)),vcoul0, wcoul0
++         !  write(111,'(3f12.8,1x,3i7,1x,e20.8,1x,2e20.8)') &
++         !       qvec_mod(:),gvec%components(:,isrtq(ig)),vcoul0, wcoul0
++         !endif
++         !-----------------------------------------------------------------
++
+         else if (ekinx .lt. Tol_zero) then
+ 
+ ! We are not in an evaluation job and were sent q=0, we don`t average. We just zero. The outside code should
+@@ -613,7 +668,9 @@
+ ! JRD: This is easy because an analytic expression exists.  See Sohrab.
+ 
+     elseif (itruncflag .eq. 6) then
+-      
++     
++!write(6,*) "Slab Trunc"
++ 
+       if (abs(qvec_mod(3)) .gt. Tol_ZERO) then
+         write(0,'(a)') 'You asked for cell slab truncation but have more q-points in z direction than qz=0!!'
+         call die('Bad Truncation', only_root_writes = .true.)
+@@ -635,11 +692,16 @@
+         kz=sqrt(DOT_PRODUCT(qkz,MATMUL(bdot,qkz)))
+         zc=2D0*PI_D/(sqrt(bdot(3,3))*2D0)
+         
+-!          write(6,*) "zc", zc
+ 
+         if ( ekinx .lt. avgcut .and. peinf%jobtypeeval .eq. 1 ) then
++
++write(6,*) "KN: In the q0 bit"
+           if (iscreen .ne. 2) then ! semiconductor or graphene
++
++write(6,*) "KN: Non-metal screening"
+             if (ekinx .gt. TOL_Zero .or. .not.minibz_done) then
++
++write(6,*) "KN: Doing mini-BZ avg"
+               call minibzaverage_2d_oneoverq2(nn,bdot, &
+                 dvalue,qran,qk,kz,zc,epshead,q0len,averagew,wcoul0)
+               vcoul(ig)=dvalue
+@@ -650,17 +712,73 @@
+                 endif
+                 minibz_done = .true.
+                 iCommFlag=peinf%inode+1
++
++
+               endif
++
++
++              !-----------------------------------------------------------------
++              ! KN Modifications 16.06.17
++              ! Print vcoul0 and wcoul0 to file wrrp.wcoul0
++                write(6,'(a15,e20.8)') "vcoul0", vcoul0
++                write(6,'(a15,2e20.8)') "wcoul0", wcoul0
++              !if (peinf%inode .eq. 0) then
++write(6,*) "KN: I should be writing to file here"
++                write(111,'(a,i3)') "screening",iscreen
++                write(111,'(a15,3f12.8)') "q0", qvec_mod(:)
++                write(111,'(a15,3i7)') "G0", gvec%components(:,isrtq(ig))
++                write(111,'(a15,e20.8)') "vcoul0", vcoul0
++                write(111,'(a15,2e20.8)') "wcoul0", wcoul0
++               !write(111,'(3f12.8,1x,3i7,1x,e20.8,1x,2e20.8)') &
++               !     qvec_mod(:),gvec%components(:,isrtq(ig)),vcoul0, wcoul0
++              !endif
++              !-----------------------------------------------------------------
+             else
+               vcoul(ig)=vcoul0
+             endif
+           else
++              !-----------------------------------------------------------------
++              ! KN Modifications 16.06.17
++              ! Print vcoul0 and wcoul0 to file wrrp.wcoul0
++                !write(6,'(a15,e20.8)') "vcoul0", vcoul0
++                !write(6,'(a15,2e20.8)') "wcoul0", wcoul0
++              if (peinf%inode .eq. 0) then
++                write(111,'(a,i3)') "screening",iscreen
++                write(111,'(a15,3f12.8)') "q0", qvec_mod(:)
++                write(111,'(a15,3i7)') "G0", gvec%components(:,isrtq(ig))
++                !write(111,'(a15,e20.8)') "vcoul0", vcoul0
++                !write(111,'(a15,2e20.8)') "wcoul0", wcoul0
++               !write(111,'(3f12.8,1x,3i7,1x,e20.8,1x,2e20.8)') &
++               !     qvec_mod(:),gvec%components(:,isrtq(ig)),vcoul0, wcoul0
++              endif
++              !-----------------------------------------------------------------
++
+             write(0,'(a)') 'You have q0vec=0 but a metal!!'
+             call die('Bad Screening Options', only_root_writes = .true.)
+           endif
+         else if (ekinx .lt. Tol_Zero) then
+           vcoul(ig) = 0D0
+         else
++        
++        !!!!!KN TEST
++        !call open_file(113,file='slab.log',form='formatted',status='replace')
++        !open(113,file='slab.log',form='formatted',access='append',status='replace')
++        !if (peinf%inode .eq. 0) then
++        !qk(:)=gvec%components(:,isrtq(ig))+qvec_mod(:)
++        !ekinx=DOT_PRODUCT(qk,MATMUL(bdot,qk))
++        !  write(113,'(a6,3i4)') "G",gvec%components(:,isrtq(ig))
++        !  write(113,'(a6,3f20.8)') "qvec_mod",qvec_mod
++        !  write(113,'(a6,3f20.8)') "qk",qk
++        !  write(113,'(a6,3f20.8)') "qkxy",qkxy
++        !  write(113,'(a6,3f20.8)') "qkz",qkz 
++        !  write(113,'(a6,3f20.8)') "kxy",kxy
++        !  write(113,'(a6,3f20.8)') "kz",kz  
++        !  write(113,'(a6,f20.8)') "zc",zc
++        !endif
++        !!call close_file(113)
++        !close(113)
++        !!!!!
++        
+           vcoul(ig) = 8.0d0*PI_D/ekinx
+           vcoul(ig) = vcoul(ig)*(1.0d0-exp(-kxy*zc)*cos(kz*zc))
+         endif
+@@ -688,6 +806,17 @@
+ 
+       oneoverq=vcoul(1)*qlen
+ 
++         !-----------------------------------------------------------------
++         ! KN Modifications 16.06.17
++         ! Print vcoul0 and wcoul0 to file wrrp.wcoul0
++         !if (peinf%inode.eq.0) then
++         !  !write(111,'(f20.8,1x,f20.8,1x,3f12.8,1x,3i7,1x,e20.8,1x,2e20.8)') &
++         !  !     ekinx,avgcut,qvec_mod(:),gvec%components(:,isrtq(ig)),vcoul0,wcoul0
++         !  write(111,'(3f12.8,1x,3i7,1x,e20.8,1x,2e20.8)') &
++         !       qvec_mod(:),gvec%components(:,isrtq(ig)),vcoul0,wcoul0
++         !endif
++         !-----------------------------------------------------------------
++
+ !----------------------------------------------------------------
+ ! Supercell Box Truncation
+ 
+@@ -721,6 +850,17 @@
+       endif
+     endif
+ 
++!-----------------------------------------------------------------
++! KN Modifications 16.06.17
++! Print vcoul0 and wcoul0 to file wrrp.wcoul0
++!  if (peinf%inode.eq.0) then
++!    !write(111,'(3f12.8,1x,3i7,1x,e20.8,1x,e20.8)') &
++!    !        qvec_mod(:),gvec%components(:,isrtq(ig)),vcoul0, wcoul0
++!    write(111,'(3f12.8,1x,3i7,1x,e20.8,1x,e20.8)') &
++!            qvec_mod(:),gvec%components(:,isrtq(ig)),vcoul,vcoul0
++!  endif
++!-----------------------------------------------------------------
++
+     ifirst = 0
+     
+     POP_SUB(vcoul_generator)
+--- Epsilon/epsilon_main.f90.orig	2016-09-01 06:00:21.000000000 +0800
++++ Epsilon/epsilon_main.f90	2018-08-08 14:36:57.852413000 +0800
+@@ -98,7 +98,7 @@
+   integer :: i,j,k,n,irk,iv,itran,it
+   integer :: ncount,ix,jx,kgq(3)
+   integer :: np,iunit,iq,icurr
+-  integer :: ik, ij
++  integer :: ik, ij, icount1, icount2
+   integer :: nmtx_t
+   real(DP) :: tsec(2)
+   real(DP) :: fact,rk(3)
+@@ -115,7 +115,8 @@
+ !--------------- Begin Program ---------------------------------------
+ 
+   call peinfo_init()
+-  
++  icount1=0
++  icount2=0
+ !----------------------
+ ! Initialize random numbers
+ 
+@@ -138,7 +139,10 @@
+   if(peinf%inode .eq. 0) then
+     call open_file(7,file='epsilon.log',form='formatted',status='replace')
+   endif
+-  
++
++!x
++     open(113,file='isortg',form='unformatted',status='replace')
++!     open(114,file='test-isortg',form='formatted',status='replace')
+   call write_program_header('Epsilon', .true.)
+ 
+ !----------- Call Input: Read crystal data from unit 25 ---------------
+@@ -316,6 +320,9 @@
+       call kinetic_energies(gvec, crys%bdot, ekin, qvec = qq)
+     endif
+ 
++!x    write(6,*) (ekin(i),i=1,100)
++!x    write(6,*) (gvec%components(1:3,i),i=1,100)
++
+ !--------------------
+ ! Sort kinetic energies
+ ! index of ordered kinetic energies in array isrtx
+@@ -330,11 +337,19 @@
+     call logit('sorting gvec')
+     call sortrx(gvec%ng, ekin, pol%isrtx, gvec = gvec%components)
+     if(peinf%inode.eq.0) call timacc(5,2)
++!x    write(6,*) gvec%ng,qq(1:3),gvec%components(1:3,12)
++!x    write(6,*) (pol%isrtx(i),i=1,50)
++
++      write(113) (pol%isrtx(i),i=1,gvec%ng)
++      write(113) (qq(i),i=1,3)
++!      write(114,*) (pol%isrtx(i),i=1,gvec%ng)
++!      write(114,*) (qq(i),i=1,3)
+ 
+ !---------------------
+ ! Compute inverse array to isrtx
+ 
+     SAFE_ALLOCATE(pol%isrtxi, (gvec%ng))
++!x    write(6,*) gvec%ng,qq(1:3),gvec%components(1:3,12)
+     do i=1,gvec%ng
+       pol%isrtxi(pol%isrtx(i))=i
+     enddo
+@@ -508,7 +523,7 @@
+ ! (pointing to syms%mtrx), and syms%kgzero(1:3,:) are the integer entries.
+ 
+     if(peinf%inode.eq.0) call timacc(6,1)
+-    call subgrp(qq,syms)
++!    call subgrp(qq,syms)
+     if (pol%patched_sampling) then
+       syms%ntranq = 1
+     endif
+@@ -546,7 +561,7 @@
+     if(peinf%inode.eq.0) call timacc(8,1)
+     SAFE_ALLOCATE(indrk, (gr%nf))
+     SAFE_ALLOCATE(neq, (gr%nf))
+-    call irrbz(syms,gr%nf,gr%f,nrk,neq,indrk)
++!    call irrbz(syms,gr%nf,gr%f,nrk,neq,indrk)
+ #ifdef USEVORO
+     if (pol%non_uniform) then
+       SAFE_ALLOCATE(kweights, (nrk))
+@@ -680,7 +695,7 @@
+ 
+           itran = syms%indsub(indst(it))
+           kgq(:) = -syms%kgzero(:,indst(it)) ! note minus sign
+-          call gmap(gvec,syms,pol%nmtx,itran,kgq,pol%isrtx,pol%isrtxi,ind,ph,.true.)
++!          call gmap(gvec,syms,pol%nmtx,itran,kgq,pol%isrtx,pol%isrtxi,ind,ph,.true.)
+           pht(:,it,irk) = ph(:)
+           indt(:,it,irk) = ind(:)
+ 
+@@ -696,7 +711,7 @@
+         if (pol%os_opt_ffts==2) then
+           if (.not.wfn_FFT_comm%done) call genwf_FFT_Wait(wfn_FFT_comm)
+           !FHJ: TODO free me later!
+-          call genwf_lvl2(kp,kpq,vwfn,pol,cwfn)
++!          call genwf_lvl2(kp,kpq,vwfn,pol,cwfn)
+         endif
+         pol%gme(:,:,:,:,irk,:)=0D0
+         do iv=1,peinf%nvownmax
+@@ -714,7 +729,7 @@
+               ! FHJ: FFT opt. level 1: precalculates FFTs of the conduction bands
+               !      each kpt at a time.
+               if (iv==1) then
+-                call mtxel_init_FFT_cond(gvec,pol,cwfn,kp)
++!                call mtxel_init_FFT_cond(gvec,pol,cwfn,kp)
+               endif
+             endif
+           endif
+@@ -732,7 +747,7 @@
+               ivin=peinf%invindexv(iv)
+ 
+               kfact = 1d0
+-              call mtxel(ivin,gvec,vwfn,cwfn,pol,ispin,irk,kp,kpq,peinf%rank_mtxel,kfact)
++!x              call mtxel(ivin,gvec,vwfn,cwfn,pol,ispin,irk,kp,kpq,peinf%rank_mtxel,kfact)
+               if(peinf%inode.eq.0) call timacc(10,2)
+             endif
+ 
+@@ -753,7 +768,7 @@
+           endif
+           if (pol%os_opt_ffts==1) then
+             ! FHJ: destroy FFTs of conduction bands
+-            call mtxel_free_FFT_cond(cwfn)
++!x            call mtxel_free_FFT_cond(cwfn)
+           endif
+ 
+           SAFE_DEALLOCATE_P(vwfn%ev)
+@@ -780,18 +795,18 @@
+ 
+       if (pol%freq_dep .eq. 0 .and. pol%fullConvLog .ne. -1) then
+ 
+-        call create_chi_converger(chi_converger,vwfn%nband,cwfn%nband)
++!x        call create_chi_converger(chi_converger,vwfn%nband,cwfn%nband)
+ 
+         if (peinf%verb_debug .and. peinf%inode==0) then
+           write(6,'(/,1x,"Starting Convergence Tests")')
+         endif
+-        call chi_convergence_test(pol,pht,indt,kp,nrk,nst,vwfn%nband,cwfn%nband,fact,chi_converger)
++!x        call chi_convergence_test(pol,pht,indt,kp,nrk,nst,vwfn%nband,cwfn%nband,fact,chi_converger)
+  
+         if(peinf%inode .eq. 0) then
+-          call chi_convergence_print(pol,iq,vwfn%nband,cwfn%nband,chi_converger)
++!x          call chi_convergence_print(pol,iq,vwfn%nband,cwfn%nband,chi_converger)
+         endif
+ 
+-        call free_chi_converger(chi_converger)
++!x        call free_chi_converger(chi_converger)
+ 
+ !        write(6,*) 'End Convergence Writing'
+ 
+@@ -806,19 +821,19 @@
+       if (peinf%verb_debug .and. peinf%inode==0) write(6,'(/,1x,"Doing chi Summation")')
+       if (peinf%inode.eq.0) call timacc(15,1)
+ 
+-      call create_chi_summator(chi_summator, pol, scal, fact, kp%nspin)
++!x      call create_chi_summator(chi_summator, pol, scal, fact, kp%nspin)
+ 
+       if (pol%gcomm .eq. 0) then
+-        call chi_summation_comm_elements(chi_summator,&
+-                                     pol,scal,kp,vwfn,cwfn,&
+-                                     nst,nrk,indt,pht)
++!x        call chi_summation_comm_elements(chi_summator,&
++!x                                     pol,scal,kp,vwfn,cwfn,&
++!x                                     nst,nrk,indt,pht)
+       else
+-        call chi_summation_comm_matrix(chi_summator,&
+-                                       pol,scal,kp,kpq,vwfn,&
+-                                       nst,nrk,indt,pht)
++!x        call chi_summation_comm_matrix(chi_summator,&
++!x                                       pol,scal,kp,kpq,vwfn,&
++!x                                       nst,nrk,indt,pht)
+       endif
+ 
+-      call free_chi_summator(chi_summator, pol)
++!x      call free_chi_summator(chi_summator, pol)
+       if(peinf%inode.eq.0) call timacc(15,2)
+       if (peinf%verb_debug .and. peinf%inode==0) write(6,'(1x,a)') "Done Polarizability"
+ 
+@@ -848,12 +863,12 @@
+         ! FHJ: TODO - write diagonal elements (I actually think this is useless)
+         if (pol%freq_dep .eq. 0) then
+           do ispin=1,kp%nspin
+-            call read_matrix_d_hdf5(scal, pol%chi(:,:,ispin), pol%nmtx, TRUNC(filename_chi_hdf5), my_iq, ispin)
++!            call read_matrix_d_hdf5(scal, pol%chi(:,:,ispin), pol%nmtx, TRUNC(filename_chi_hdf5), my_iq, ispin)
+           enddo
+         else
+           do ispin=1,kp%nspin
+-            call read_matrix_f_hdf5(scal, pol%nFreq, pol%nfreq_in_group, pol%chiRDyn(:,:,:,ispin), &
+-              pol%nmtx, pol%nfreq_group, TRUNC(filename_chi_hdf5), my_iq, ispin)
++!            call read_matrix_f_hdf5(scal, pol%nFreq, pol%nfreq_in_group, pol%chiRDyn(:,:,:,ispin), &
++!              pol%nmtx, pol%nfreq_group, TRUNC(filename_chi_hdf5), my_iq, ispin)
+           enddo
+         endif
+       else
+@@ -865,29 +880,29 @@
+         if(peinf%inode.eq.0) then
+           write(6,'(1x,a)') 'Reading from file chi0mat.'
+           call open_file(unit=10,file='chi0mat',form='unformatted',status='old')
+-          read(10)
+-          read(10)
+-          read(10)
+-          read(10)
+-          read(10)
+-          read(10)
+-          read(10)
+-          read(10)
+-          read(10)
+-          read(10)
+-          read(10) 
+-          read(10) nmtx_t
++!          read(10)
++!          read(10)
++!          read(10)
++!          read(10)
++!          read(10)
++!          read(10)
++!          read(10)
++!          read(10)
++!          read(10)
++!          read(10)
++!          read(10) 
++!          read(10) nmtx_t
+         endif
+ #ifdef MPI
+         call mpi_barrier(MPI_COMM_WORLD,mpierr)
+ #endif
+         do ispin=1,kp%nspin
+           if (pol%freq_dep .eq. 0) then
+-            call read_matrix_d(scal,pol%chi(:,:,ispin),pol%nmtx,iunit)
++!            call read_matrix_d(scal,pol%chi(:,:,ispin),pol%nmtx,iunit)
+           endif ! pol%freq_dep .eq. 0
+           if (pol%freq_dep .eq. 2) then
+-            call read_matrix_f(scal, pol%nFreq, pol%nfreq_in_group, &
+-              pol%chiRDyn(:,:,:,ispin), pol%nmtx, pol%nfreq_group, iunit)
++!            call read_matrix_f(scal, pol%nFreq, pol%nfreq_in_group, &
++!              pol%chiRDyn(:,:,:,ispin), pol%nmtx, pol%nfreq_group, iunit)
+           endif ! pol%freq_dep .eq. 2!
+         enddo ! ispin
+       else ! is_q0
+@@ -897,19 +912,19 @@
+           write(6,'(1x,a)') 'Reading from file chimat.'
+           if (initial_access .eq. 0) then
+             call open_file(unit=11,file='chimat',form='unformatted',status='old')
+-            read(11)
+-            read(11)
+-            read(11)
+-            read(11)
+-            read(11)
+-            read(11)
+-            read(11)
+-            read(11)
+-            read(11)
+-            read(11)
++!            read(11)
++!            read(11)
++!            read(11)
++!            read(11)
++!            read(11)
++!            read(11)
++!            read(11)
++!            read(11)
++!            read(11)
++!            read(11)
+           endif
+-          read(11)
+-          read(11) nmtx_t
++!x          read(11)
++!x          read(11) nmtx_t
+ !                write(6,*) 'nmtx_t for chimat', nmtx_t
+         endif
+ #ifdef MPI
+@@ -917,11 +932,11 @@
+ #endif
+         do ispin=1,kp%nspin
+           if (pol%freq_dep .eq. 0) then
+-            call read_matrix_d(scal,pol%chi(:,:,ispin),pol%nmtx,iunit)
++!x            call read_matrix_d(scal,pol%chi(:,:,ispin),pol%nmtx,iunit)
+           endif ! pol%freq_dep .eq. 0
+           if (pol%freq_dep .eq. 2) then
+-            call read_matrix_f(scal, pol%nFreq, pol%nfreq_in_group, &
+-              pol%chiRDyn(:,:,:,ispin), pol%nmtx, pol%nfreq_group, iunit)
++!x            call read_matrix_f(scal, pol%nFreq, pol%nfreq_in_group, &
++!              pol%chiRDyn(:,:,:,ispin), pol%nmtx, pol%nfreq_group, iunit)
+           endif ! pol%freq_dep .eq. 2
+         enddo ! ispin
+         initial_access = 1
+@@ -1015,28 +1030,28 @@
+           do i=1,gvec%ng
+             isorti(pol%isrtx(i)) = i
+           enddo
+-          call write_gvec_indices_hdf(gvec%ng,pol%isrtx,isorti,ekin,my_iq,TRUNC(filename_chi_hdf5))
+-          SAFE_DEALLOCATE(isorti)
++!          call write_gvec_indices_hdf(gvec%ng,pol%isrtx,isorti,ekin,my_iq,TRUNC(filename_chi_hdf5))
++!          SAFE_DEALLOCATE(isorti)
+         endif
+         ! FHJ: TODO - write diagonal elements (I actually think this is useless)
+         if (pol%freq_dep .eq. 0) then
+           do ispin=1,kp%nspin
+             ! FHJ: FIXME: We should unify these routines!
+ #ifdef USESCALAPACK
+-            call write_matrix_d_par_hdf(scal, pol%chi(:,:,ispin), pol%nmtx, my_iq, ispin, TRUNC(filename_chi_hdf5))
++!            call write_matrix_d_par_hdf(scal, pol%chi(:,:,ispin), pol%nmtx, my_iq, ispin, TRUNC(filename_chi_hdf5))
+ #else
+-            call write_matrix_d_hdf(scal, pol%chi(:,:,ispin), pol%nmtx, my_iq, ispin, TRUNC(filename_chi_hdf5))
++!            call write_matrix_d_hdf(scal, pol%chi(:,:,ispin), pol%nmtx, my_iq, ispin, TRUNC(filename_chi_hdf5))
+ #endif
+           enddo
+         else
+           do ispin=1,kp%nspin
+             ! FHJ: FIXME: We should unify these routines!
+ #ifdef USESCALAPACK
+-            call write_matrix_f_par_hdf(scal, pol%nFreq_in_group, pol%chiRDyn(:,:,:,ispin), &
+-              pol%nmtx, my_iq, ispin, TRUNC(filename_chi_hdf5), pol%nfreq_group)
++!            call write_matrix_f_par_hdf(scal, pol%nFreq_in_group, pol%chiRDyn(:,:,:,ispin), &
++!              pol%nmtx, my_iq, ispin, TRUNC(filename_chi_hdf5), pol%nfreq_group)
+ #else
+-            call write_matrix_f_hdf(scal, pol%nFreq, pol%chiRDyn(:,:,:,ispin), &
+-              pol%nmtx, my_iq, ispin, TRUNC(filename_chi_hdf5))
++!            call write_matrix_f_hdf(scal, pol%nFreq, pol%chiRDyn(:,:,:,ispin), &
++!              pol%nmtx, my_iq, ispin, TRUNC(filename_chi_hdf5))
+ #endif
+           enddo
+         endif
+@@ -1045,18 +1060,18 @@
+         iunit=11
+         if (is_q0) iunit=10
+         if(peinf%inode.eq.0) then
+-          write(iunit) syms%ntranq,(((syms%mtrx(i,j,syms%indsub(n)),i=1,3),j=1,3), &
+-            (syms%tnp(k,syms%indsub(n)),syms%kgzero(k,n),k=1,3),n=1,syms%ntranq)
+-          np=pol%nmtx*(pol%nmtx+1)/2
+-          write(iunit) pol%nmtx,np,(pol%isrtx(i),ekin(i),i=1,gvec%ng),(pol%irow(i),i=1,pol%nmtx)
++!          write(iunit) syms%ntranq,(((syms%mtrx(i,j,syms%indsub(n)),i=1,3),j=1,3), &
++!            (syms%tnp(k,syms%indsub(n)),syms%kgzero(k,n),k=1,3),n=1,syms%ntranq)
++!          np=pol%nmtx*(pol%nmtx+1)/2
++!          write(iunit) pol%nmtx,np,(pol%isrtx(i),ekin(i),i=1,gvec%ng),(pol%irow(i),i=1,pol%nmtx)
+         endif
+         do ispin=1,kp%nspin
+           if (pol%freq_dep .eq. 0) then
+-            call write_matrix_d(scal,pol%chi(:,:,ispin),pol%nmtx,iunit)
++!            call write_matrix_d(scal,pol%chi(:,:,ispin),pol%nmtx,iunit)
+           endif ! pol%freq_dep .eq. 0
+           if (pol%freq_dep==2 .or. pol%freq_dep==3) then
+-            call write_matrix_f(scal, pol%nFreq, pol%chiRDyn(:,:,:,ispin), &
+-            pol%nmtx, iunit, pol%nfreq_group)
++!            call write_matrix_f(scal, pol%nFreq, pol%chiRDyn(:,:,:,ispin), &
++!            pol%nmtx, iunit, pol%nfreq_group)
+           endif
+         enddo ! ispin
+ #ifdef HDF5
+@@ -1081,7 +1096,7 @@
+     endif ! peinf%inode .eq. 0
+ 
+     if (.not. pol%skip_epsilon) then
+-        call epsinv(gvec,pol,ekin,qq,is_q0,crys,scal,kp,omega_plasma,iq)
++!        call epsinv(gvec,pol,ekin,qq,is_q0,crys,scal,kp,omega_plasma,iq)
+ 
+       if(peinf%inode.eq.0) then
+         call logit('Finished epsinv')
+--- Makefile.orig	2016-09-01 06:00:19.000000000 +0800
++++ Makefile	2018-07-09 11:40:10.949270000 +0800
+@@ -106,7 +106,7 @@
+ manual: printsvninfo
+ 	bin/assemble_manual.sh > manual.html
+ 
+-install: all-flavors
++install: all
+ ifdef INSTDIR
+ 	mkdir -p $(INSTDIR)/bin
+ 	install bin/*.x $(INSTDIR)/bin/
+--- manual.html.orig	2016-09-01 06:00:13.000000000 +0800
++++ manual.html	2018-07-09 11:40:13.107715000 +0800
+@@ -1,5 +1,5 @@
+ <html>
+-<title>BerkeleyGW manual (version 1.2.0)</title>
++<title>BerkeleyGW manual (branch 1.2.x revision 7090)</title>
+ <style> pre {
+ white-space: pre-wrap; /* css-3 */
+ white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
+@@ -8,7 +8,7 @@
+ word-wrap: break-word; /* Internet Explorer 5.5+ */
+ }</style>
+ <body>
+-<h1>BerkeleyGW manual (version 1.2.0)</h1>
++<h1>BerkeleyGW manual (branch 1.2.x revision 7090)</h1>
+ <img src='data:image/png;base64,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'>
+ <h2>Contents</h2>
+ <ol>
+@@ -59,7 +59,6 @@
+ <li><a href=#MeanField/Utilities/README>MeanField/Utilities/README</a>
+ <li><a href=#MeanField/Utilities/wfnmerge.inp>MeanField/Utilities/wfnmerge.inp</a>
+ <li><a href=#MeanField/Utilities/fix_occ.inp>MeanField/Utilities/fix_occ.inp</a>
+-<li><a href=#MeanField/Utilities/wfnmix_QSGW.inp>MeanField/Utilities/wfnmix_QSGW.inp</a>
+ </ol>
+ <li><a href=#SECTION:SAPO>SAPO</a><ol>
+ <li><a href=#MeanField/SAPO/README>MeanField/SAPO/README</a>
+@@ -74,7 +73,6 @@
+ <li><a href=#Epsilon/epsinvomega.inp>Epsilon/epsinvomega.inp</a>
+ <li><a href=#Epsilon/epsmat_merge.inp>Epsilon/epsmat_merge.inp</a>
+ <li><a href=#Epsilon/epsmat_old2hdf5.inp>Epsilon/epsmat_old2hdf5.inp</a>
+-<li><a href=#Epsilon/epsmat_intp.inp>Epsilon/epsmat_intp.inp</a>
+ </ol>
+ <li><a href=#SECTION:Sigma>Sigma</a><ol>
+ <li><a href=#Sigma/README>Sigma/README</a>
+@@ -94,10 +92,6 @@
+ <li><a href=#PlotXct/README>PlotXct/README</a>
+ <li><a href=#PlotXct/plotxct.inp>PlotXct/plotxct.inp</a>
+ </ol>
+-<li><a href=#SECTION:NonLinearOptics>NonLinearOptics</a><ol>
+-<li><a href=#NonLinearOptics/README>NonLinearOptics/README</a>
+-<li><a href=#NonLinearOptics/nonlinearoptics.inp>NonLinearOptics/nonlinearoptics.inp</a>
+-</ol>
+ <li><a href=#SECTION:Visual>Visual</a><ol>
+ <li><a href=#Visual/README>Visual/README</a>
+ <li><a href=#Visual/surface.inp>Visual/surface.inp</a>
+@@ -107,7 +101,6 @@
+ <li><a href=#doxygen/README>doxygen/README</a>
+ <li><a href=#Common/README>Common/README</a>
+ <li><a href=#Common/qhull/README>Common/qhull/README</a>
+-<li><a href=#Common/voro++/README.BerkeleyGW>Common/voro++/README.BerkeleyGW</a>
+ <li><a href=#MeanField/spglib-1.0.9/README>MeanField/spglib-1.0.9/README</a>
+ </ol>
+ </ol>
+@@ -3975,13 +3968,6 @@
+ 0       ! extra charge to put in
+ </pre>
+ 
+-<hr>
+-<a id=MeanField/Utilities/wfnmix_QSGW.inp><h2>MeanField/Utilities/wfnmix_QSGW.inp</h2>
+-<pre>
+-1.032  !slope
+-0.117  !intercept
+-</pre>
+-
+ <a id=SECTION:SAPO><h2>SAPO</h2>
+ <hr>
+ <a id=MeanField/SAPO/README><h2>MeanField/SAPO/README</h2>
+@@ -4739,23 +4725,6 @@
+ truncval     ! truncation radius, for spherical truncation. Otherwise, ignored
+ </pre>
+ 
+-<hr>
+-<a id=Epsilon/epsmat_intp.inp><h2>Epsilon/epsmat_intp.inp</h2>
+-<pre>
+-WFN !wavefunction
+-epsmat !input epsmat file
+-epsmat_out !output epsmat file
+-7 ! number of interpolated points to produce
+- 0.00000000 0.00000000 0.00000000 1.0
+- 0.00000000 0.00781250 0.00000000 1.0
+- 0.00000000 0.01562500 0.00000000 1.0
+- 0.00000000 0.03125000 0.00000000 1.0
+- 0.00000000 0.04687500 0.00000000 1.0
+- 0.02343750 0.49218750 0.00000000 1.0
+- 0.02343750 0.02343750 0.00000000 1.0
+- 0.00000000 0.50781250 0.00000000 1.0
+-</pre>
+-
+ <a id=SECTION:Sigma><h2>Sigma</h2>
+ <hr>
+ <a id=Sigma/README><h2>Sigma/README</h2>
+@@ -6447,137 +6416,6 @@
+ 
+ </pre>
+ 
+-<a id=SECTION:NonLinearOptics><h2>NonLinearOptics</h2>
+-<hr>
+-<a id=NonLinearOptics/README><h2>NonLinearOptics/README</h2>
+-<pre>
+-================================================================================
+-NonLinearOptics code
+-================================================================================
+-
+-  Version 1.2   (Aug, 2016)
+-  F. H. da Jornada, J. Deslippe, D. Vigil-Fowler, J. I. Mustafa, T. Rangel,
+-  F. Bruneval, F. Liu, D. Y. Qiu, D. A. Strubbe, G. Samsonidze, J. Lischner.
+-
+-  Version 1.0	(Aug, 2011) (Alpha)
+-  Version 0.5	(July, 2008) (Alpha)
+-  Version 0.2	J. Deslippe (2008) (Alpha)
+-
+---------------------------------------------------------------------------------
+-
+-Description:
+-
+-This code is intended to be run after a full GW/BSE calculation and
+-generates the UltraFast or 2-photon spectrum of a material by calculating
+-the optical transition strength between the lowest excited exciton state
+-(user inputed) and higher excited exciton states.
+-
+-WARNING - This code should be considered alpha quality. It has been tested
+-on only a few systems. Use at your own risk and validate.
+-
+---------------------------------------------------------------------------------
+-
+-Required Input:
+-
+-	nonlinearoptics.inp	Input parameters.  See detailed explanation below.
+-	eigenvectors		The exciton wavefunctions in Bloch space.
+-	WFN_fi			Bloch wavefunctions on the unshifted fine grid.
+-	WFNq_fi			Bloch wavefunctions on the shifted fine grid.
+-				Only needed if velocity operator is used.
+-
+-Additional Input:
+-
+-	eqp.dat	This is not yet implemented (energies are read from A_svck) 
+-                        If it were to work, it would probably be: 
+-                        A list of quasiparticle energy corrections for the bands
+-			in WFN_fi and WFNq_fi. If absent the scissors operator from
+-			nonlinearoptics.inp is used.
+-
+-Auxiliary Files: (output files from previous runs - used as input to speed up calculation)
+-
+-	vmtxel_nl	The interband optical matrix elements.  This is different
+-			from the file vmtxel created by absorption in that it contains
+-			valence-valence and conduction-conduction matrix elements.
+-			Specify read_vmtxel_uf in the nonlinearoptics.inp file and files
+-			WFN_fi and WFNq_fi are not needed.
+-
+---------------------------------------------------------------------------------
+-
+-	nonlinearoptics.inp	Please see example nonlinearoptics.inp in this directory
+-				for more complete options.
+-
+---------------------------------------------------------------------------------
+-
+-Output Files:
+-
+---------------------------------------------------------------------------------
+-
+-Tricks and hints:
+-
+-</pre>
+-
+-<hr>
+-<a id=NonLinearOptics/nonlinearoptics.inp><h2>NonLinearOptics/nonlinearoptics.inp</h2>
+-<pre>
+-# nonlinearoptics.inp
+-
+-# Select type of run
+-#two_photon_job  (Two Photon Calculation)
+-#ultrafast_job (UltraFastSpec)
+-
+-# fine grid is used to actually do the diagonalization; here the bands
+-# count down/up from the Fermi level (as appropriate)
+-number_val_bands_fine 10
+-number_cond_bands_fine 10
+-
+-# What type of operator do we use. See explanation in BSE directory
+-#use_velocity
+-#q_shift 0.0 0.00 0.00 
+-use_momentum
+-polarization 0.0 0.0 1.0
+-
+-# If we have already calculated matrix elements 
+-# (stored in file vmtxel_nl) read them in.
+-#read_vmtxel_nl
+-
+-# In eV, width of Lorentzian broadening
+-energy_resolution 0.025
+-
+-# Scissors operator (linear fit of the quasiparticle
+-# energy corrections) for the bands in WFN_fi and WFNq_fi.
+-# For valence-band energies:
+-# ev_cor = ev_in + evs + evdel * (ev_in - ev0)
+-# For conduction-band energies:
+-# ec_cor = ec_in + ecs + ecdel * (ec_in - ec0)
+-# Defaults below. evs, ev0, ecs, ec0 are in eV
+-#evs     0.0
+-#ev0     0.0
+-#evdel   0.0
+-#ecs     0.0
+-#ec0     0.0
+-#ecdel   0.0
+-# or
+-#cvfit   0.0 0.0 0.0 0.0 0.0 0.0
+-
+-# Are the grids (fine from diag calc) to be expanded using symmetries?
+-#use_symmetries_fine_grid
+-#use_symmetries_shifted_grid
+-
+-# EXPERIMENTAL FEATURES FOR TESTING PURPOSES ONLY
+-# 'unfolded BZ' is from the kpoints in the WFN file
+-# 'full BZ' is generated from the kgrid parameters in the WFN file
+-# See comments in Common/checkbz.f90 for more details
+-# Replace unfolded BZ with full BZ
+-#fullbz_replace
+-# Write unfolded BZ and full BZ to files
+-#fullbz_write
+-
+-# TWO-PHOTON ONLY
+-# One can limit the number of final states to consider in the two-photon process
+-# to a subset of neig (the default value used).
+-#number_of_final_states 500
+-</pre>
+-
+ <a id=SECTION:Visual><h2>Visual</h2>
+ <hr>
+ <a id=Visual/README><h2>Visual/README</h2>
+@@ -7048,36 +6886,6 @@
+ </pre>
+ 
+ <hr>
+-<a id=Common/voro++/README.BerkeleyGW><h2>Common/voro++/README.BerkeleyGW</h2>
+-<pre>
+-DISCLAIMER
+-==========
+-
+-This directory contains source code from voro++-0.4.6. The file LICENSE has
+- the terms for distributing these files.
+-
+-The following files are part of the BerkeleyGW package, and not voro++:
+- - libtile_voro.cc
+- - libtile_voro.h
+- - test_voro.f90
+- - README.BerkeleyGW
+-
+-The following files were removed from the original voro++ distribution:
+- - examples/*
+- - html/*
+- - man/*
+- - scripts/*
+- - src/README
+- - src/Doxyfile
+- - src/Makefile.dep
+-
+-The following files were changed to better integrate with BerkeleyGW:
+- - Makefile
+- - Makefile.dep
+- - src/Makefile
+-</pre>
+-
+-<hr>
+ <a id=MeanField/spglib-1.0.9/README><h2>MeanField/spglib-1.0.9/README</h2>
+ <pre>
+ * Imported spglib-1.0.9 from http://spglib.sourceforge.net. This is a BSD-licensed C library for symmetries by Atsushi Togo. --DAS
+--- Sigma/epscopy.f90.orig	2016-09-01 06:00:19.000000000 +0800
++++ Sigma/epscopy.f90	2018-08-08 14:36:57.853301000 +0800
+@@ -212,7 +212,10 @@
+     neps = 0
+     sig%nFreq = 0
+   endif
+-  if (sig%nq0/=1.and..not.sig%subsample) call die('epscopy_init: nq0/=1')
++  !KN: this is causing problems with subsampled epsilons computed in BGW 2.0.
++  !    Commenting out the following line for now...hopefully it doesn't cause any issues
++  !if (sig%nq0/=1.and..not.sig%subsample) call die('epscopy_init: nq0/=1')
++  !KN 
+   if (peinf%inode==0) then
+     write(6,'(/1x,a,i0)') 'Total number of frequencies in the dielectric matrix: ', sig%nfreq
+     write(6,'(1x,a,i0/)') 'Number of imag. frequencies in the dielectric matrix: ', sig%nfreq_imag
+--- Sigma/sigma_main.f90.orig	2016-09-01 06:00:19.000000000 +0800
++++ Sigma/sigma_main.f90	2018-08-08 14:36:57.854623000 +0800
+@@ -77,7 +77,7 @@
+ ! Dielectric matrices
+ 
+   integer :: ngq, neps, nmtx, ncoul, ncoulch, ncoulb, ncouls, ngpown_q
+-  integer :: ngqt,nmtxt,nfreqgpp
++  integer :: ngqt,nmtxt,nfreqgpp,icount1
+   integer, allocatable :: isrtq(:),isrtqi(:)
+   integer, allocatable :: isrtrq(:)
+   integer, pointer :: isrtrqi(:)
+@@ -129,6 +129,10 @@
+   logical :: skip_checkbz, is_subq
+ 
+ !--------------- Begin Program -------------------------------------------------
++!KN: open file for writing wrrp.wcoul0
++   open(111,file='wrrp.wcoul0',form='formatted',status='replace')
++!x: open file which saves gmap ind(ig,irq) ph(ig,irq) 
++   open(112,file='gmapdata',form='unformatted',status='replace')
+ 
+   call peinfo_init()
+ 
+@@ -365,6 +369,11 @@
+     call epscopy(crys,gvec,sig,neps,epsmpi,epshead,iunit_eps,fne)
+   endif
+ 
++!xuan
++!  write(6,*) 'after epscopy', epsmpi%eps(10,20,6)
++!  write(6,*) 'q point', epsmpi%qk(:,6)
++!  write(6,*) 'nmtx', epsmpi%nmtx(6)
++
+   if (peinf%inode.eq.0) call timacc(3,2)
+ 
+ !----------------------------
+@@ -424,7 +433,8 @@
+   if(peinf%inode == 0) call checkgriduniformity(sig%qgrid, crys, sig%icutv)
+ 
+ !-------- Loop over kpoints rkn-------------------------------------------------
+-
++!  write(6,*) '----------test number of k points---------'
++!  write(6,*) sig%nkn
+ 
+   do ika=1,sig%nkn
+ !----------------------------
+@@ -654,22 +664,55 @@
+     if (peinf%inode.eq.0) call timacc(7,1)
+     call irrbz(syms,gr%nf,gr%f,nrq,neq,indrq,rq,sig%nq,sig%qpt,itnrq,kg0,nfix=sig%nq0)
+     if (peinf%inode.eq.0) call timacc(7,2)
+-    
++    do irq_ = 1 , sig%nq
++!x    write(6,'(3f10.6)') sig%qpt(:,irq_)
++    enddo
++!    write(6,*) "check transformation matrix 15-6"
++!    write(6,*) indrq(15)
++!    write(6,'(3f10.6)') sig%qpt(:,indrq(15))
++!    write(6,'(3f10.6)') rq(:,15)
++!       write(6,*) itnrq(15), " transformation index"
++!       write(6,*) "xuan: kg0 vector", kg0(:,15)
++       
++!       write(6,*) syms%mtrx(:,1,itnrq(15))
++!       write(6,*) syms%mtrx(:,2,itnrq(15))
++!       write(6,*) syms%mtrx(:,3,itnrq(15))
++!       write(6,*) syms%tnp(:,itnrq(15))
++!x
++      irq_=2
++!x    write(6,*) "check transformation matrix ",irq_,indrq(irq_)
++!
++!        write(6,*) indrq(irq_)
++!        write(6,'(3f10.6)') sig%qpt(:,indrq(irq_))
++!        write(6,'(3f10.6)') rq(:,irq_)
++!          write(6,*) itnrq(irq_), " transformation index"
++!          write(6,*) "xuan: kg0 vector", kg0(:,irq_)
++!          write(6,*) syms%mtrx(:,1,itnrq(irq_))
++!          write(6,*) syms%mtrx(:,2,itnrq(irq_))
++!          write(6,*) syms%mtrx(:,3,itnrq(irq_))
++!          write(6,*) syms%tnp(:,itnrq(irq_))
++
+ 
+ !!---------- Loop over k-points in irr bz with respect to kn (rq) --------------
++!x: save number of q point in fz
++    write(112) nrq
++    write(112) gvec%ng
+ 
+     irq_min = 1
+     call progress_init(prog_info, 'calculating Sigma', 'block', &
+       (nrq-irq_min+1)*(peinf%ndiag_max+peinf%noffdiag_max)*sig%nspin)
+ 
++    write(6,*) '----------test number of q points---------'
++    write(6,*) nrq
++
+     do irq_ = irq_min, nrq
+       irq = irq_
+       is_subq = .false.
+ 
+-      if (peinf%verb_debug .and. peinf%inode.eq.0) then
+-        write(6,60) irq,nrq
+-        write(6,*)
+-      endif
++!x      if (peinf%verb_debug .and. peinf%inode.eq.0) then
++!        write(6,60) irq,nrq
++!        write(6,*) 'check q!!!',rq(1:3, irq)
++!x      endif
+ 60    format(/,3x,'qpoint',i5,' out of ',i5)
+ 
+ ! Compute energies: |q+g|**2
+@@ -682,6 +725,16 @@
+ ! Sort ekin in ascending order for this q
+ ! The indices are placed in array isrtrq
+       call sortrx(gvec%ng, ekin, isrtrq, gvec = gvec%components)
++!x
++!x      write(112) (isrtrq(ig),ig=1,gvec%ng)      
++
++      if(irq .eq. 2)then
++!       write(6,*) (ekin(ig),ig=1,100)
++!       write(6,*) (gvec%components(1:3,ig),ig=1,100)
++!      write(6,*) gvec%ng,rq(1:3, irq),gvec%components(1:3,12)
++!       write(6,*) (isrtrq(ig),ig=1,50)
++      endif
++
+       if ((sig%freq_dep.eq.0.or.sig%exact_ch.eq.1).and.irq_==irq_min) then
+         isrtrqi=0
+         do j=1,gvec%ng
+@@ -693,7 +746,12 @@
+ ! Compute cutoff in sums over G,G`
+       ncoulb = gcutoff(gvec%ng, ekin, isrtrq, sig%ecutb)
+       ncouls = gcutoff(gvec%ng, ekin, isrtrq, sig%ecuts)
+-      ncoul = max(ncouls,ncoulb)
++
++!x      write(6,*) '----------ncoulb,ncouls,epsmpi%ngpown,gvec%ng sig%ecutb sig%ecuts--'
++!      write(6,*) ncoulb,ncouls,epsmpi%ngpown,gvec%ng,sig%ecutb,sig%ecuts 
++!x      write(6,*) irq,irq_,epsmpi%qk(1,irq),epsmpi%qk(2,irq),epsmpi%qk(3,irq)
++
++  ncoul = max(ncouls,ncoulb)
+ 
+       if (sig%freq_dep.eq.0.or.sig%exact_ch.eq.1) then
+         if(irq_==irq_min) ncoulch = ncoul
+@@ -734,6 +792,10 @@
+ !!!------- Calculate Vcoul -----------------------------------------------------
+       if (peinf%inode.eq.0) call timacc(13,1)
+       vq=rq(:,irq)
++!x      write(6,*) '----irq nm  epsmpi%nmtx(indrq(irq))-----'
++!      write(6,*) irq,nm,epsmpi%nmtx(nm)
++!      write(6,'(a17,3f10.6)') " irr zone q", epsmpi%qk(:,nm)
++!x      write(6,'(a17,3f10.6)') "full zone q", rq(:,irq) 
+       qlen = sqrt(DOT_PRODUCT(vq,MATMUL(crys%bdot,vq)))
+       if(sig%freq_dep /= -1) call check_screening_trunc(sig%icutv,sig%iscreen,sig%q0vec,crys%bdot)
+       iparallel=1
+@@ -773,17 +835,29 @@
+ 
+         ngq = gvec%ng
+         nmtx = epsmpi%nmtx(nm)
+-
++!      write(6,*) nmtx, "epsmpi%nmtx(nm)------------------"
+         if (peinf%inode .eq. 0) then
+           isrtq(:) = epsmpi%isrtq(:,nm)
+           isrtqi(:) = epsmpi%isrtqi(:,nm)
+         endif
++!x
++      icount1=0
++      if (all( abs( rq(1:3,irq) - epsmpi%qk(1:3,nm)) .lt. TOL_Small ))then
++!x         write(6,*) rq(1:3,irq)
++      do ig = 1, ngq
++        if (isrtq(ig) .ne. isrtrq(ig)) then
++!x         write(6,*) 'found it',ngq
++      icount1=icount1+1
++        endif
++      enddo
++      endif
++!x       write(6,*)'number of diff isrtq',icount1
+ #ifdef MPI
+         call MPI_Bcast(isrtq, ngq, MPI_INTEGER, 0, MPI_COMM_WORLD, mpierr)
+         call MPI_Bcast(isrtqi, ngq, MPI_INTEGER, 0, MPI_COMM_WORLD, mpierr)
+ #endif
+         qk(:) = epsmpi%qk(:,nm)
+-
++!      write(6,*) "qpoint-------",qk(:), sig%qpt(:,nm)
+ ! Find g=0 in main gvec list and eps gvector list
+ 
+         ! write explicitly to avoid possible warning about array temporary
+@@ -797,13 +871,18 @@
+         
+         if (sig%freq_dep.eq.0.or.sig%freq_dep.eq.1) then
+           eps(:,:)=epsmpi%eps(:,:,nm)
+-        else ! sig%freq_dep.eq.2 .or. 3
++
++         else ! sig%freq_dep.eq.2 .or. 3
+           epsR(:,:,:)=epsmpi%epsR(:,:,:,nm)
+           if (sig%need_advanced) then
+             epsA(:,:,:)=epsmpi%epsA(:,:,:,nm)
+           endif
+         endif
+-        
++
++!x            if(irq .eq. 15) then
++!             write(6,*) 'irrbz epsmatrix readin',epsmpi%eps(10,20,nm)
++!x            endif
++
+ ! CHP: By first distributing and then doing the wing fix, we can let
+ !      all the processors work together, thus, saving some time.
+ 
+@@ -863,10 +942,10 @@
+       
+       if (peinf%inode.eq.0) call timacc(14,2)
+       
+-      if (peinf%verb_debug .and. peinf%inode==0) then
++!      if (peinf%verb_debug .and. peinf%inode==0) then
+         write(6,'(3(a,i10))') 'nmtx =',nmtx,' ncouls =',ncouls
+         write(6,*)
+-      endif
++!      endif
+       if(nmtx.gt.neps) then
+         call die('nmtx.gt.neps')
+       endif
+@@ -905,14 +984,32 @@
+         ph(:)=ZERO
+         call gmap(gvec,syms,ncouls,itran,kg,isrtrq,isrtqi,ind,ph, &
+          sig%die_outside_sphere) ! TROUBLE
+-        do ig = 1, gvec%ng
++!x       write(6,*) ncouls,"after gmap ncouls---------"
++ !      write(6,*) itran, " transformation index"
++ !      write(6,*) "xuan: kg0 vector", kg(:)
++ !      write(6,*) syms%mtrx(:,1,itran)
++ !      write(6,*) syms%mtrx(:,2,itran)
++ !      write(6,*) syms%mtrx(:,3,itran)
++ !      write(6,*) syms%tnp(:,itran)
++ !x      write(6,*) ind(10),ind(99),ind(399),"ig index phase"
++
++       do ig = 1, gvec%ng
+           if (ind(ig) .gt. 0 .and. ind(ig) .le. gvec%ng) then
+             indinv(ind(ig))=ig
+           endif
+         enddo
+       endif
+       if (peinf%inode.eq.0) call timacc(8,2)
+-      
++
++
++!x: output gmap ind(ig,irq) ph(ig,irq)
++      write(112)  ncouls
++      write(112) (ind(ig),ig=1,ncouls)
++      write(112) (ph(ig),ig=1,ncouls)
++      write(112) (rq(i,irq),i=1,3)
++      write(112) (nm)
++      write(112) (sig%qpt(i,nm),i=1,3)
++!      write(112) (isrtrq(ig),ig=1,gvec%ng)
+ 
+ !!!------- Done reading inverse dielectric matrix for q-point rq(:,irq) --------
+ 
+@@ -962,7 +1059,7 @@
+ 
+           call logit('Calling mtxel')
+           if (peinf%inode.eq.0) call timacc(10,1)
+-          call mtxel(in,gvec,wfnkq,wfnk,ncoul,isrtrq,aqs,ispin,kp)
++!x          call mtxel(in,gvec,wfnkq,wfnk,ncoul,isrtrq,aqs,ispin,kp)
+           if (peinf%inode.eq.0) call timacc(10,2)
+           if (sig%noffdiag.gt.0.and.peinf%flag_diag(in)) then
+             do j=1,peinf%ntband_node
+@@ -976,7 +1073,7 @@
+               call logit('Calling mtxel_occ')
+               call timacc(16,1)
+ ! JRD ALL PROCS DO THIS NOW. 
+-              call mtxel_occ(in,in,gvec,wfnk,ncoulch,isrtrq,aqsch,ispin,kp)
++!x              call mtxel_occ(in,in,gvec,wfnk,ncoulch,isrtrq,aqsch,ispin,kp)
+               call timacc(16,2)
+               if (nrq.gt.1) aqsaugchd(:,in,ispin)=aqsch(:)
+             else
+@@ -986,10 +1083,12 @@
+ 
+ !---------------------
+ ! Compute diag SX and CH
+-
++       write(6,*) "sig%freq_dep=",sig%freq_dep
+           if (sig%freq_dep.eq.0.or.sig%freq_dep.eq.1.or.sig%freq_dep.eq.2.or.sig%freq_dep.eq.3) then
+             call logit('Calling mtxel_cor for diagonal matrix elements')
+             call timacc(11,1)
++            if(irq .eq. 15) then
++                    write(6,*) 'before mtxel',eps(10,20)
+             call mtxel_cor(peinf%index_diag(in), &
+              peinf%index_diag(in),ispin,ncouls,neps,gvec,eps,ph, &
+              ind,indinv,isrtrqi,isrtrq,vcoul,crys,sig,wpg,wfnk,wfnkq,ncoulch, &
+@@ -998,6 +1097,7 @@
+              epsmpi%inv_igp_index,epsmpi%ngpown, &
+              epsR,epsA,achtD_n1,asxtDyn,achtDyn,achtDyn_cor,achtDyn_corb,ach2tDyn,1)
+             call timacc(11,2)
++            endif
+           else
+             achtcor = ZERO
+             if (sig%freq_dep/=0 .and. sig%exact_ch==1) achtcor_n1 = ZERO
+@@ -1109,8 +1209,12 @@
+ ! Bands are relabelled according to sig%off*(1:sig%noffdiag)
+ ! Loop is parallelized according to peinf%index_offdiag(1:peinf%noffdiag_max)
+ 
++  write(6,*) '----------test---------'
++    write(6,*) peinf%noffdiag_max,'out of off diag'
++
+         do ioff=1,peinf%noffdiag_max
+-          
++  write(6,*) '----------test---------'
++  write(6,*)  'off diag exists'  
+           call progress_step(prog_info)
+           if (peinf%verb_debug .and. peinf%inode==0) then
+             if (peinf%npools.eq.1) then
+@@ -1368,11 +1472,11 @@
+ ! no core states. Same goes for all subsequent occurences below. 
+ 
+       do ispin=1,sig%nspin
+-        write(6,989)ikn,sig%spin_index(ispin)
++!x        write(6,989)ikn,sig%spin_index(ispin)
+         if (sig%freq_dep.eq.-1.or.sig%freq_dep.eq.0.or.sig%freq_dep.eq.1.or.sig%freq_dep.eq.3) then
+-          write(6,*)
+-          write(6,900) &
+-            "n", "Emf", "Eo", "Vxc", "X", "SX-X", "CH", "Cor", "Sig"
++!x          write(6,*)
++!x          write(6,900) &
++!x            "n", "Emf", "Eo", "Vxc", "X", "SX-X", "CH", "Cor", "Sig"
+           do i=1,sig%ndiag
+             write(6,901) sig%diag(i), wfnk%elda(sig%diag(i)-sig%ncore_excl,ispin), &
+               wfnk%ek(sig%diag(i)-sig%ncore_excl,ispin), dble(alda(i,ispin))*ryd, &
+@@ -1386,15 +1490,15 @@
+         if (sig%freq_dep.eq.2) then
+           write(6,*)
+           if (sig%freq_dep_method==2) then
+-            write(6,900) &
+-              "n", "Emf", "Eo", "X", "Vxc", "Re Res", "Re Int", "Re Sig"
+-            write(6,900) &
+-              '', '', '', '', '', "Im Res", "Im Int", "Im Sig"
++!x            write(6,900) &
++!x              "n", "Emf", "Eo", "X", "Vxc", "Re Res", "Re Int", "Re Sig"
++!x            write(6,900) &
++!x              '', '', '', '', '', "Im Res", "Im Int", "Im Sig"
+           else
+-            write(6,900) &
+-              "n", "Emf", "Eo", "X", "Vxc", "Re SX-X", "Re CH", "Re Sig"
+-            write(6,900) &
+-              '', '', '', '', '', "Im SX-X", "Im CH", "Im Sig"
++!x            write(6,900) &
++!x              "n", "Emf", "Eo", "X", "Vxc", "Re SX-X", "Re CH", "Re Sig"
++!x            write(6,900) &
++!x              '', '', '', '', '', "Im SX-X", "Im CH", "Im Sig"
+           endif
+           do i=1,sig%ndiag
+             
+@@ -1414,15 +1518,15 @@
+                 iwlda=iw
+               endif
+             enddo
+-            write(6,901) sig%diag(i), wfnk%elda(sig%diag(i)-sig%ncore_excl,ispin), &
+-              wfnk%ek(sig%diag(i)-sig%ncore_excl,ispin), dble(ax(i,ispin))*ryd, &
+-              dble(alda(i,ispin))*ryd, dble(asxDyn(iwlda,i,ispin))*ryd, &
+-              dble(achDyn(iwlda,i,ispin)+achcor(i,ispin))*ryd, &
+-              dble(ax(i,ispin)+asxDyn(iwlda,i,ispin)+achDyn(iwlda,i,ispin)+achcor(i,ispin))*ryd, &
+-              dble(alda(i,ispin))*ryd
+-            write(6,902) IMAG(asxDyn(iwlda,i,ispin))*ryd, IMAG(achDyn(iwlda,i,ispin))*ryd, &
+-              IMAG(ax(i,ispin)+asxDyn(iwlda,i,ispin)+achDyn(iwlda,i,ispin))*ryd, &
+-              IMAG(ax(i,ispin)+asxDyn(iwlda,i,ispin)+ach2Dyn(iwlda,i,ispin))*ryd
++!x            write(6,901) sig%diag(i), wfnk%elda(sig%diag(i)-sig%ncore_excl,ispin), &
++!x              wfnk%ek(sig%diag(i)-sig%ncore_excl,ispin), dble(ax(i,ispin))*ryd, &
++!x              dble(alda(i,ispin))*ryd, dble(asxDyn(iwlda,i,ispin))*ryd, &
++!x              dble(achDyn(iwlda,i,ispin)+achcor(i,ispin))*ryd, &
++!x              dble(ax(i,ispin)+asxDyn(iwlda,i,ispin)+achDyn(iwlda,i,ispin)+achcor(i,ispin))*ryd, &
++!x              dble(alda(i,ispin))*ryd
++!x            write(6,902) IMAG(asxDyn(iwlda,i,ispin))*ryd, IMAG(achDyn(iwlda,i,ispin))*ryd, &
++!x              IMAG(ax(i,ispin)+asxDyn(iwlda,i,ispin)+achDyn(iwlda,i,ispin))*ryd, &
++!x              IMAG(ax(i,ispin)+asxDyn(iwlda,i,ispin)+ach2Dyn(iwlda,i,ispin))*ryd
+           enddo
+         endif
+       enddo
+@@ -1559,7 +1663,7 @@
+ 
+   
+   if (peinf%inode==0) then
+-    do iunit=6,8,2
++    do iunit=8,2
+       write(iunit,'()')
+       write(iunit,'(a)') repeat('=', 80)
+       write(iunit,'()')
+@@ -1926,6 +2030,10 @@
+     write(8000, '(/,a)')'# Please refer to Sigma/README for more information about this file.'
+     call close_file(8000) ! file spectrum.dat
+   endif
++
++  ! KN: close custom files
++  close(111)
++  close(112)
+   
+   call write_memory_usage()
+ 
