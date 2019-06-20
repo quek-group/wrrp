@@ -33,7 +33,12 @@ To compile the complex version of the code using ifort and Intel MKL:
 Note that you may need to modify this script to suit your machine's environment.
 
 ### Patching BerkeleyGW v1.2.0
-In order to properly use the symmetry of the crystal (i.e. in order to use BerkeleyGW epsmat files generated in a reduced Brillouin zone), wrrp.x requires the user to extract symmetry information from the BerkeleyGW code. This ca be accomplished by using a modified version of BerkeleyGW v1.2.0, which writes two files, `isortg` and `gmapdata`. These files are written by the modified epsilon.x and sigma.x routines, respectively. We provide a patch file, `BerkeleyGW-1.2.0_qmap.patch` that applies the changes to BerkeleyGW v1.2.0 needed to write `isortg` and `gmapdata`. The patch can be applied using the standard Unix 'patch' command.
+In order to properly use the symmetry of the crystal (i.e. in order to use BerkeleyGW epsmat files generated in a reduced Brillouin zone), wrrp.x requires the user to extract symmetry information from the BerkeleyGW code. This ca be accomplished by using a modified version of BerkeleyGW v1.2.0, which writes two files, `isortg` and `gmapdata`. These files are written by the modified epsilon.x and sigma.x routines, respectively. We provide a patch file, `BerkeleyGW-1.2.0_qmap.patch`, in the `BerkeleyGW` directory, that applies the changes to BerkeleyGW v1.2.0 needed to write `isortg` and `gmapdata`. Upon entering the Berkeley v1.2.0 directory, the patch can be applied using the standard Unix 'patch' command:
+```
+cd /path/to/BGW1.2.0
+patch -p0 < /path/to/patch/file/BerkeleyGW-1.2.0_qmap.patch
+```
+BerkeleyGW can then be compiled as usual.
 
 ### Running the code
 #### Input files
