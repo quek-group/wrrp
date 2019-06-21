@@ -1,5 +1,5 @@
 &control
-   prefix = 'slab'
+   prefix = 'bn'
    calculation = 'bands'
    restart_mode = 'from_scratch'
    wf_collect = .true.

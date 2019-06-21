@@ -78,11 +78,11 @@ program wrrp
   write(6,*) "version: beta"
   write(6,*) "start time: ",date," at ",time
   write(6,*) repeat("=",79)
-  #ifdef CPLX
+#ifdef CPLX
   write(6,*) "We are running in COMPLEX mode."
-  #else
+#else
   write(6,*) "We are running in REAL mode."
-  #endif
+#endif
   !x: open file which contains gmap ind(ig,irq) ph(ig,irq)
   open(19,file='gmapdata',form='unformatted',status='old')
   !x isortg contains all the isortg for each q in fz
