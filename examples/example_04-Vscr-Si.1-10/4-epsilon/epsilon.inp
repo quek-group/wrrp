@@ -1,6 +1,6 @@
 epsilon_cutoff 10.0
 
-number_bands 563
+number_bands 296
 dont_use_hdf5
 
 begin qpoints

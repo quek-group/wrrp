@@ -1180,22 +1180,11 @@ program wrrp
   !     !fix electron at bonding site (centre of Si-Si bond)
   !     !get W(r,r') for 110 plane, which cuts xy plane diagonally
   !
-  !     ! for 12x12x12 FFT
+  !     ! for 12x12x12 FFT grid
   !     write(97,*) x, z, data_rrp(x,x,z,3,3,3)
   !     write(98,*) x, z, real(data_rrp(x,x,z,3,3,3))
   !     write(99,*) x, z, abs(data_rrp(x,x,z,3,3,3))
   !
-  !     ! for 24x24x24 FFT
-  !     !write(97,*) x, z, data_rrp(x,x,z,4,4,4)
-  !     !write(98,*) x, z, real(data_rrp(x,x,z,4,4,4))
-  !     !write(99,*) x, z, abs(data_rrp(x,x,z,4,4,4))
-  !
-  !     !fix electron at antibondonding site
-  !     !get W(r,r') for 110 plane, which cuts xy plane diagonally
-  !     ! for 24x24x24 FFT
-  !     !write(97,*) x, z, data_rrp(x,x,z,4,4,10)
-  !     !write(98,*) x, z, real(data_rrp(x,x,z,4,4,10))
-  !     !write(99,*) x, z, abs(data_rrp(x,x,z,4,4,10))
   !   enddo
   !   ! write blank lines required for gnuplot contour plot input
   !   write(97,*)

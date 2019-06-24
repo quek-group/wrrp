@@ -16,8 +16,8 @@
    vxcg_file = 'vxc.cplx'
    vxc_flag = .true.
    vxc_file = 'vxc.dat'
-   vxc_diag_nmin = 8
-   vxc_diag_nmax = 23
+   vxc_diag_nmin = 1
+   vxc_diag_nmax = 64
    vxc_offdiag_nmin = 0
    vxc_offdiag_nmax = 0
 /

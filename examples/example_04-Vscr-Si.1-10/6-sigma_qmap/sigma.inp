@@ -1,0 +1,15 @@
+screened_coulomb_cutoff 10.0
+bare_coulomb_cutoff 60.0
+
+number_bands 35
+
+band_index_min 15
+band_index_max 35
+
+dont_use_hdf5
+screening_semiconductor
+exact_static_ch 1
+
+begin kpoints
+0.000000  0.200000  0.400000 1.0
+end

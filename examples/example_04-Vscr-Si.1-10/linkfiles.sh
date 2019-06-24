@@ -1,7 +1,7 @@
 #!/bin/bash
 
 WDIR=$(pwd)
-PREFIX='bn'
+PREFIX='si'
 
 # link SCF charge density to WFN directories
 mkdir -p ./2-wfn/$PREFIX.save

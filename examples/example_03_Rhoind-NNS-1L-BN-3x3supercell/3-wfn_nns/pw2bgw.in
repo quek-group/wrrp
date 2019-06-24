@@ -1,5 +1,5 @@
 &input_pw2bgw
-   prefix = 'slab'
+   prefix = 'bn'
    real_or_complex = 2
    wfng_flag = .true.
    wfng_file = 'wfn.cplx'
