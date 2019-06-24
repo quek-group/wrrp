@@ -12,5 +12,5 @@ cell_slab_truncation
 exact_static_ch 1
 
 begin kpoints
-0.055556  0.111111  0.000000 1.0
+0.055556  0.055556  0.000000 1.0
 end
