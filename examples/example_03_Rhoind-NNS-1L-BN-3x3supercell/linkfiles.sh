@@ -35,8 +35,8 @@ ln -s ../4-epsilon/epsmat   ./epsmat
 
 # link files for WRRP
 cd $WDIR/7-wrrp
+#ln -s ../2-wfn/subweights.dat  # link subweights.dat file from BGW subsample_plan.x
 ln -s ../4-epsilon/eps0mat         .
 ln -s ../4-epsilon/epsmat          .
 ln -s ../5-epsilon_qmap/isortg     .
 ln -s ../6-sigma_qmap/gmapdata     .
-ln -s ../6-sigma_qmap/wrrp.wcoul0  .
