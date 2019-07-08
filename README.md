@@ -68,3 +68,5 @@ BerkeleyGW can then be compiled as usual.
 1. When the Monte-Carlo averaging scheme is used, the head element of W (written to `wrrp.wcoul0`) results in a planar-averaged Vscr(r,r) that does not tend toward 0 away from the slab. While the overall shape of the curve is correct, the offset is not. This issue is avoided if the NNS scheme is used. We recommend the use of NNS wherever possible.
 
 2. In systems without symmetry (i.e. where the full BZ is used to calculate the wavefunctions), the `gmapdata` file might be incorrect, causing wrrp.x to crash.
+
+3. Example 4 is currently not working due to an issue caused by merging different versions of the code (`gmapdata` is not read correctly by wrrp.x). We're working to fix this issue. 
