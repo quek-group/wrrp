@@ -1,0 +1,7 @@
+    1.25550   -2.17459    0.00000
+    1.25550    2.17459    0.00000
+    0.00000    0.00000   14.99997  ! lattice vectors in angstrom
+    2                              ! number of atoms, crystal coordinates
+    5 0.00000   0.00000   0.00000
+    7 0.66667   0.33333   0.00000
+    3 3 1                          ! supercell size
