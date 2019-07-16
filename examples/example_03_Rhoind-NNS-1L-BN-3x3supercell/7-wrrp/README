@@ -10,3 +10,13 @@ In order to plot the 3D rho_ind(r,r'), you must modify wrrp.f90 as follows:
 - under the "WRITE OUTPUT FILES" section (toward the end of the file), comment the lines in the "PLANAR AVERAGE OF f(r,r) ALONG z" and "2D CONTOUR PLOT OF f(r,r') WITH FIXED r'" subsections
 - under the "WRITE OUTPUT FILES" section (toward the end of the file), uncomment the lines in the "BINARY OUTPUT FILE" "PLANAR AVERAGE OF f(r,r) ALONG z" subsection
 - re-compile wrrp
+
+To generate a file that can be plotted using xcrysden:
+- re-compile read_datarrp using the read_datarrp.f90 in this folder
+- A few .xsf files will be generated. However, you need to add in the lattice vectors and atomic coordinates manually.
+- To generate the lattice vectors and atomic coordinates for the supercell, a companion utility struct_sc is provided
+  - In the input file 'pts', input the unit cell lattice vectors, number of atoms, atomic coordinates, and supercell size
+  - Run struct_sc.x and the supercell coordinates are found in file 'sc_pts'
+- Input lattice vectors and atomic coordinates in the xsf file, under headings 'PRIMVEC' and 'PRIMCOORD'
+- Under section 'BEGIN_BLOCK_DATAGRID_3D', the lattice vectors are to be replaced by the output, which currently always outputs zeros
+- Visualize the xsf file using xcrysden
