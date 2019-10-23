@@ -1,7 +1,7 @@
 # wrrp.x
 
 ## Description
-wrrp.x is a Fortran code that performs six-dimensional (6D) inverse Fourier transforms on inverse dielectric matrices generated using [BerkeleyGW](https://berkeleygw.org/).
+wrrp.x is a Fortran code that performs six-dimensional (6D) inverse Fourier transforms on inverse dielectric matrices generated using [BerkeleyGW](https://berkeleygw.org/). The name of the program comes from its original purpose of computing the real-space screened Coulomb interaction, *W(r,r')*.
 
 The BerkeleyGW/1.2.0 code is licensed under licensed under a free, open source, and permissive 3-clause modified BSD license. BerkeleyGW, Copyright (c) 2011, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy). All rights reserved.
 
