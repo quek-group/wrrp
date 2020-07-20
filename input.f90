@@ -28,11 +28,11 @@ contains
 
   !------------------------------
   ! Read the input file 'wrrp.inp'
-  subroutine read_input(a,b,alat,blat,vol,use_q0,use_ss,use_wavg,use_slab,calctype,calcname,sc_size)
+  subroutine read_input(a,b,alat,blat,vol,use_q0,use_ss,use_wavg,use_slab,use_symm,calctype,calcname,sc_size)
     character, intent(out) :: calcname*12
     integer, intent(out) :: calctype ! calculation type fo wrrp.x
     real(DP), intent(out) :: a(3,3), b(3,3), alat, blat, vol
-    logical, intent(out) :: use_q0, use_ss, use_wavg, use_slab ! q0 point indicator, W head averaging, slab truncation
+    logical, intent(out) :: use_q0, use_ss, use_wavg, use_slab, use_symm ! q0 point indicator, W head averaging, slab truncation, symmetry
     integer :: ioerr, i, j
     !Nic
     integer, intent(out) :: sc_size(3) ! supercell size
@@ -55,6 +55,7 @@ contains
     ! setting use_ss = .true. for calctype other than 0 or 1 should cause
     ! the program to die gracefully
     use_ss = .false.    ! use BGW subsampling scheme for q-->0
+    use_symm = .true.   ! use symmetry to unfold BZ by default
 
 
     ! Read calculation type
@@ -98,6 +99,11 @@ contains
     ! .false. (default): do not read 'subweights.dat' file
     ! .true.: read BGW-generated 'subweights.dat' file
     read(77,*,iostat=ioerr) use_ss
+
+    ! Read use_symm boolean
+    ! .false.: do not read 'isortg', 'gmapdata'
+    ! .true. (default): read 'isortg', 'gmapdata'
+    read(77,*,iostat=ioerr) use_symm
 
     ! Read lattice vectors a
     do i=1,3

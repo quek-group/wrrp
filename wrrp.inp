@@ -3,6 +3,7 @@
 .false. ! use_wavg: Use Monte Carlo averaged value of W and V at the q->0 limit
 .true.  ! use_q0: eps0mat/chi0mat file is present and we should read the file
 .true.  ! use_ss: non-uniform neck subsampling is used
+.true.  ! use_symm: use symmetries to unfold BZ
 10.171856963    0.000000000     0.000000000
 0.000000000     10.171856963    0.000000000
 0.000000000     0.000000000     10.171856963 ! lattice vectors in bohrs
