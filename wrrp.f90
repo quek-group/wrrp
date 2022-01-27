@@ -558,6 +558,9 @@ program wrrp
 
      ! Calculate specified property if not using NNS scheme.
      ! Calculation of NNS properties is done in iq loop above.
+     ! Nic: (2021.6.24) Actually, I think that for metals there is no need to
+     ! replace wcoul0 since we can get it exactly. we don't have issues with
+     ! q+G=0 as in sigma for our use case. 
      if (.not. use_ss) then
         select case (calctype)
         case (0)
@@ -574,9 +577,12 @@ program wrrp
            write(6,*) "Calculating Vscr(G,G')..."
            ! calculate W(G,G')
            data_ggp = matmul(matrix_ggp,v_gp)
+           ! Nic
            ! replace head element W(0,0; q=q0) with wcoul0
-           write(6,*) "Replacing head element of W with wcoul0..."
-           data_ggp(1,1) = wcoul0
+!           if ((iscreen .ne. 2) .or. (.not. use_slab)) then
+!             write(6,*) "Replacing head element of W with wcoul0..."
+!             data_ggp(1,1) = wcoul0
+!           endif
            !v_gp(1,1) = vcoul0
            ! calculate Vscr(G,G') = W(G,G') - V(G')
            data_ggp = data_ggp - v_gp
@@ -642,13 +648,14 @@ program wrrp
 
      ! q is 0 for the purpose of q-pt scaling
      ! KN: even for truncated metals, right?
-     qcart = qzero
+     !qcart = qzero
      ! Nic: maybe qzero is why it becomes periodic?
-     !    qcart = 0.d0
-     !    qcart = q0(1)*b(:,1) + q0(2)*b(:,2) + q0(3)*b(:,3)
+         qcart = 0.d0
+         qcart = q0(1)*b(:,1) + q0(2)*b(:,2) + q0(3)*b(:,3)
+!         qcart = q0(1)*b(1,:) + q0(2)*b(2,:) + q0(3)*b(3,:)
 
      ! Convert q to Cartesian 1/au units
-     !    qcart = qcart * blat
+         qcart = qcart * blat
 
      !write(6,*) fftbox(:,1,1,1,1,1)
      call get_sc_fftbox(fftbox,nr_sc,scvec2real,rvec2real,sc2uc_idx,sc_fftbox)
@@ -1102,13 +1109,15 @@ program wrrp
      deallocate(data_ggp1d)
   enddo ! end q loop
   !x
-  deallocate(ind)
-  deallocate(ph)
-  deallocate(rqin)
-  deallocate(epsqpt)
-  deallocate(indrq)
-  deallocate(isortg_fzeps)
-  deallocate(q_fzeps)
+  if (use_symm) then
+    deallocate(ind)
+    deallocate(ph)
+    deallocate(rqin)
+    deallocate(epsqpt)
+    deallocate(indrq)
+    deallocate(isortg_fzeps)
+    deallocate(q_fzeps)
+  endif
   !Nic
   deallocate (sc2uc_idx)
   deallocate (scvec2real)

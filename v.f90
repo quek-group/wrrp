@@ -34,8 +34,10 @@ contains
 
     ! Convert q to Cartesian coordinates in blat units
     qcart = q(1)*b(:,1) + q(2)*b(:,2) + q(3)*b(:,3)
+!    qcart = q(1)*b(1,:) + q(2)*b(2,:) + q(3)*b(3,:)
     ! Convert G' to Cartesian coordinates
     gcart = gp(1)*b(:,1) + gp(2)*b(:,2) + gp(3)*b(:,3)
+!    gcart = gp(1)*b(1,:) + gp(2)*b(2,:) + gp(3)*b(3,:)
     ! Compute sum of G' and q in blat units
     qg = 0.d0
     qg = gcart + qcart
@@ -80,6 +82,7 @@ contains
     if (norm_cart .le. tol_head) then
        ! This is the head element (|q+G| = 0) so use vcoul0
        write(6,*) "Replacing head element of V with vcoul0..."
+write(6,*) "in v0"
        vcoul = vcoul0
     elseif (use_slab) then
        !if (use_slab) then
