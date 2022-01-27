@@ -568,8 +568,8 @@ program wrrp
            ! calculate W(G,G')
            data_ggp = matmul(matrix_ggp,v_gp)
            ! replace head element W(0,0; q=q0) with wcoul0
-           write(6,*) "Replacing head element of W with wcoul0..."
-           data_ggp(1,1) = wcoul0
+!           write(6,*) "Replacing head element of W with wcoul0..."
+!           data_ggp(1,1) = wcoul0
         case(1)
            ! KN: FIX THIS: IS THIS THE CORRECT WAY TO REPLACE wcoul0 and vcoul0
            ! for Vscr? Should vcoul0 be included in v_gp during multiplication of
