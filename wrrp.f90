@@ -61,7 +61,7 @@ program wrrp
   ! KN original variables
   integer :: x, y, z, xp, yp, zp
   integer :: kmax(3), nmax(3), nfft(6), maxnfft(6)
-  logical :: use_q0, use_ss, use_wavg, use_slab, initial_read
+  logical :: use_q0, use_ss, use_wavg, use_slab, initial_read, use_symm
   real(DP) :: scale, a(3,3), b(3,3), alat, blat, vcell, r(3), rp(3), rtot(3), q0(3), qeff(3), qzero(3), qcart(3), rq, vcoul0, wcoul0r, wcoul0i, subcut, eking, ekingp
   complex(DPC) :: qfac, tmpsum
   SCALAR :: vcoul, wcoul0
@@ -92,7 +92,7 @@ program wrrp
 
   ! Read input file, hardcoded as 'wrrp.inp'
   ! Nic: added new variable sc_size in wrrp.inp
-  call read_input(a,b,alat,blat,vcell,use_q0,use_ss,use_wavg,use_slab,calctype,calcname,sc_size)
+  call read_input(a,b,alat,blat,vcell,use_q0,use_ss,use_wavg,use_slab,use_symm,calctype,calcname,sc_size)
 
   ! Convert cell volume from alat^3 to au^3 units
   vcell = alat**3 * vcell
@@ -558,6 +558,9 @@ program wrrp
 
      ! Calculate specified property if not using NNS scheme.
      ! Calculation of NNS properties is done in iq loop above.
+     ! Nic: (2021.6.24) Actually, I think that for metals there is no need to
+     ! replace wcoul0 since we can get it exactly. we don't have issues with
+     ! q+G=0 as in sigma for our use case. 
      if (.not. use_ss) then
         select case (calctype)
         case (0)
@@ -565,8 +568,8 @@ program wrrp
            ! calculate W(G,G')
            data_ggp = matmul(matrix_ggp,v_gp)
            ! replace head element W(0,0; q=q0) with wcoul0
-           write(6,*) "Replacing head element of W with wcoul0..."
-           data_ggp(1,1) = wcoul0
+!           write(6,*) "Replacing head element of W with wcoul0..."
+!           data_ggp(1,1) = wcoul0
         case(1)
            ! KN: FIX THIS: IS THIS THE CORRECT WAY TO REPLACE wcoul0 and vcoul0
            ! for Vscr? Should vcoul0 be included in v_gp during multiplication of
@@ -574,9 +577,12 @@ program wrrp
            write(6,*) "Calculating Vscr(G,G')..."
            ! calculate W(G,G')
            data_ggp = matmul(matrix_ggp,v_gp)
+           ! Nic
            ! replace head element W(0,0; q=q0) with wcoul0
-           write(6,*) "Replacing head element of W with wcoul0..."
-           data_ggp(1,1) = wcoul0
+!           if ((iscreen .ne. 2) .or. (.not. use_slab)) then
+!             write(6,*) "Replacing head element of W with wcoul0..."
+!             data_ggp(1,1) = wcoul0
+!           endif
            !v_gp(1,1) = vcoul0
            ! calculate Vscr(G,G') = W(G,G') - V(G')
            data_ggp = data_ggp - v_gp
@@ -642,13 +648,14 @@ program wrrp
 
      ! q is 0 for the purpose of q-pt scaling
      ! KN: even for truncated metals, right?
-     qcart = qzero
+     !qcart = qzero
      ! Nic: maybe qzero is why it becomes periodic?
-     !    qcart = 0.d0
-     !    qcart = q0(1)*b(:,1) + q0(2)*b(:,2) + q0(3)*b(:,3)
+         qcart = 0.d0
+         qcart = q0(1)*b(:,1) + q0(2)*b(:,2) + q0(3)*b(:,3)
+!         qcart = q0(1)*b(1,:) + q0(2)*b(2,:) + q0(3)*b(3,:)
 
      ! Convert q to Cartesian 1/au units
-     !    qcart = qcart * blat
+         qcart = qcart * blat
 
      !write(6,*) fftbox(:,1,1,1,1,1)
      call get_sc_fftbox(fftbox,nr_sc,scvec2real,rvec2real,sc2uc_idx,sc_fftbox)
@@ -701,52 +708,54 @@ program wrrp
   !data_rrp = 0.d0
 
   !==============================================================================
-  ! XFY Modifications for enabling symmetry
-  !x: read in ind(ig,irq) ph(ig,irq) generates by gmap using BGW sigma with one specific point only.
+  ! Nic: If we are not using symmetry, skip this 
+  if (use_symm) then
+     ! XFY Modifications for enabling symmetry
+     !x: read in ind(ig,irq) ph(ig,irq) generates by gmap using BGW sigma with one specific point only.
+     !x number of q points in fz
+     read(19) nrq
+     !x number of g vectors due to wave function cutoff
+     read(19) ngq
+     allocate (isortg_fzeps(ngq,nrq))
+     allocate (q_fzeps(3,nrq))
 
-  !x number of q points in fz
-  read(19) nrq
-  !x number of g vectors due to wave function cutoff
-  read(19) ngq
-  allocate (isortg_fzeps(ngq,nrq))
-  allocate (q_fzeps(3,nrq))
+     allocate (rqin(3,nrq))
+     allocate (epsqpt(3,nrq))
+     write(6,*)
+     write(6,*) "xuan: nrq = ", nrq
 
-  allocate (rqin(3,nrq))
-  allocate (epsqpt(3,nrq))
-  write(6,*)
-  write(6,*) "xuan: nrq = ", nrq
-
-  irq = 1
-  read(19) ncouls
-  ncoulsm = ncouls + 200
-  allocate (ind(ncoulsm,nrq))
-  allocate (ph(ncoulsm,nrq))
-  allocate (indrq(nrq))
-
-  irq = 1
-  !x G -> G_1 for each q in fz
-  read(19) (ind(ig,irq),ig=1,ncouls)
-  read(19) (ph(ig,irq),ig=1,ncouls)
-  !x q points in fz together with gmap
-  read(19) (rqin(i,irq),i=1,3)
-  read(19) (indrq(irq))
-  !x q points in irbz corresponding to each q in fz
-  read(19) (epsqpt(i,irq),i=1,3)
-
-  do irq = 2,nrq
-     !x isortg readin from file for each q in fz
-     read(18) (isortg_fzeps(ig,irq),ig=1,ngq)
-     !x fz q points together with isortg
-     read(18) (q_fzeps(i,irq),i=1,3)
-
+     irq = 1
      read(19) ncouls
+     ncoulsm = ncouls + 200
+     allocate (ind(ncoulsm,nrq))
+     allocate (ph(ncoulsm,nrq))
+     allocate (indrq(nrq))
+
+     irq = 1
+     !x G -> G_1 for each q in fz
      read(19) (ind(ig,irq),ig=1,ncouls)
      read(19) (ph(ig,irq),ig=1,ncouls)
+     !x q points in fz together with gmap
      read(19) (rqin(i,irq),i=1,3)
-
      read(19) (indrq(irq))
+     !x q points in irbz corresponding to each q in fz
      read(19) (epsqpt(i,irq),i=1,3)
-  enddo
+
+     do irq = 2,nrq
+        !x isortg readin from file for each q in fz
+        read(18) (isortg_fzeps(ig,irq),ig=1,ngq)
+        !x fz q points together with isortg
+        read(18) (q_fzeps(i,irq),i=1,3)
+
+        read(19) ncouls
+        read(19) (ind(ig,irq),ig=1,ncouls)
+        read(19) (ph(ig,irq),ig=1,ncouls)
+        read(19) (rqin(i,irq),i=1,3)
+
+        read(19) (indrq(irq))
+        read(19) (epsqpt(i,irq),i=1,3)
+     enddo
+  endif
 
   !==============================================================================
   ! Main loop for all other q points
@@ -796,6 +805,9 @@ program wrrp
            read(11) (matrix_ggp(ig,igp),ig=1,nmtx)
         enddo
 
+        ! Nic: copy to epstemp
+        epstemp = matrix_ggp
+
         write(6,*) "Unfolding current q-point..."
         ! If q0 then qmapi has length (nq+1), with qmapi(1) = qmapi_q0, so we must add 1 to qmapi index
         if (use_q0) then
@@ -835,35 +847,36 @@ program wrrp
            data_ggp1d = 0.d0
            v_gp = 0.d0
            vinv_gp = 0.d0
+           ! Nic: skip if symmetry not used
            !x: using BerkeleyGW sigma code (one point only, since subgroup sysmmetry operations of Gamma poin
            !   give the smallest irbz) to generate ind(ig,irq) ph(ig,irq ) which maps iqs --> iq
            !   search which q in fz this iqs corresponds to, then save it to irq
-
-           irq_loop: do irq_ = 1,nrq
-              !x  find which index of gmap produce the current q point in qstar loop
-              if ( all( abs( rqin(1:3,irq_) - qstar(1:3,iqs)) .lt. TOL_Small )) then
-                 !                write(6,*) "1st if in"
-                 if (all( abs( epsqpt(1:3,irq_) - q(1:3,iq)) .lt. TOL_Small)) then
-                    !                  write(6,*) "2nd if in"
-                    irq=irq_
-                    exit irq_loop
+           if (use_symm) then
+              irq_loop: do irq_ = 1,nrq
+                 !x  find which index of gmap produce the current q point in qstar loop
+                 if ( all( abs( rqin(1:3,irq_) - qstar(1:3,iqs)) .lt. TOL_Small )) then
+                    !                write(6,*) "1st if in"
+                    if (all( abs( epsqpt(1:3,irq_) - q(1:3,iq)) .lt. TOL_Small)) then
+                       !                  write(6,*) "2nd if in"
+                       irq=irq_
+                       exit irq_loop
+                    endif
                  endif
-              endif
-           enddo irq_loop ! irq_
+              enddo irq_loop ! irq_
 
-           irq2_loop: do irq_ = 2,nrq
-              !x  find which index of isortg produce the current q point in qstar loop
-              if ( all( abs( q_fzeps(1:3,irq_) - qstar(1:3,iqs)) .lt. TOL_Small )) then
-                 irq2=irq_
-                 exit irq2_loop
-              endif
-           enddo irq2_loop ! irq_
-           !x use isortg readin from file
-           do igp = 1,ngq
-              isortg(igp)=isortg_fzeps(igp,irq2)
-           enddo
-
-           !x Construct epsmat at iqs (fz) using iq (irz)
+              irq2_loop: do irq_ = 2,nrq
+                 !x  find which index of isortg produce the current q point in qstar loop
+                 if ( all( abs( q_fzeps(1:3,irq_) - qstar(1:3,iqs)) .lt. TOL_Small )) then
+                    irq2=irq_
+                    exit irq2_loop
+                 endif
+              enddo irq2_loop ! irq_
+              !x use isortg readin from file
+              do igp = 1,ngq
+                 isortg(igp)=isortg_fzeps(igp,irq2)
+              enddo
+           endif
+              !x Construct epsmat at iqs (fz) using iq (irz)
 
            ! Construct asymmetric v(q+G') matrix
            do igp = 1,nmtx ! G' loop
@@ -876,9 +889,11 @@ program wrrp
                     v_gp(ig,igp) = 0.d0  ! off-diagonal elements are 0
                     vinv_gp(ig,igp) = 0.d0
                  endif
-                 !x            q map for epsilon matrix
-                 epstemp(ig,igp)=ph(ig,irq)*conjg(ph(igp,irq))*matrix_ggp(ind(ig,irq),ind(igp,irq))
 
+                 if (use_symm) then
+                    !x            q map for epsilon matrix
+                    epstemp(ig,igp)=ph(ig,irq)*conjg(ph(igp,irq))*matrix_ggp(ind(ig,irq),ind(igp,irq))
+                 endif 
               enddo ! end G loop
            enddo ! end G' loop
 
@@ -1094,13 +1109,15 @@ program wrrp
      deallocate(data_ggp1d)
   enddo ! end q loop
   !x
-  deallocate(ind)
-  deallocate(ph)
-  deallocate(rqin)
-  deallocate(epsqpt)
-  deallocate(indrq)
-  deallocate(isortg_fzeps)
-  deallocate(q_fzeps)
+  if (use_symm) then
+    deallocate(ind)
+    deallocate(ph)
+    deallocate(rqin)
+    deallocate(epsqpt)
+    deallocate(indrq)
+    deallocate(isortg_fzeps)
+    deallocate(q_fzeps)
+  endif
   !Nic
   deallocate (sc2uc_idx)
   deallocate (scvec2real)
