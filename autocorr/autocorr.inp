@@ -1,0 +1,5 @@
+14.172945 ! z coordinate (in bohr) of slab surface
+401 401 13 ! position of the charge (in units of FFT indices)
+0 ! number of ADDITIONAL charges to be included in the cell
+
+! See more description in subroutine read_input_autocorr in input.f90

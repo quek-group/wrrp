@@ -1,0 +1,5 @@
+nat ! Number of atoms
+C 0.0 0.0 0.0 6.0 ! atomtype, [atomposx, atomposy, atomposz], bader charge
+C 1.2 1.2 1.2 6.0 ! Atom positions in Cartesian coordiantes, units of bohr
+
+! Example input above.
